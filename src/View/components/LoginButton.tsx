@@ -1,5 +1,4 @@
 // components/LoginButton.tsx
-
 import React, { useState } from 'react'
 import {
   TouchableOpacity,
@@ -27,17 +26,12 @@ const MUTED       = 'rgba(255,255,255,0.30)'
 const MUTED_TXT   = 'rgba(255,255,255,0.50)'
 
 type Screen = 'login' | 'register'
-type Props = {
-    onPress?: () => void
-    onLogin?: (usuario: string, password: string) => Promise<void>
-}
+type Props  = { onPress?: () => void }
 
-const LoginButton = ({ onPress, onLogin }: Props) => {
+const LoginButton = ({ onPress }: Props) => {
   const [visible, setVisible]       = useState(false)
   const [screen,  setScreen]        = useState<Screen>('login')
   const [focused, setFocused]       = useState<string | null>(null)
-  const [usuario, setUsuario] = useState('')
-  const [password, setPassword] = useState('')
 
   const open  = () => { setScreen('login'); setVisible(true); onPress?.() }
   const close = () => setVisible(false)
@@ -62,26 +56,9 @@ const LoginButton = ({ onPress, onLogin }: Props) => {
                   </Pressable>
 
                   {screen === 'login'
-    ? (
-        <LoginForm
-            focused={focused}
-            setFocused={setFocused}
-            onRegister={() => setScreen('register')}
-            usuario={usuario}
-            password={password}
-            setUsuario={setUsuario}
-            setPassword={setPassword}
-            onLogin={onLogin}
-        />
-    )
-    : (
-        <RegisterForm
-            focused={focused}
-            setFocused={setFocused}
-            onBack={() => setScreen('login')}
-        />
-    )
-}
+                    ? <LoginForm  focused={focused} setFocused={setFocused} onRegister={() => setScreen('register')} />
+                    : <RegisterForm focused={focused} setFocused={setFocused} onBack={() => setScreen('login')} />
+                  }
                 </View>
               </KeyboardAvoidingView>
             </TouchableWithoutFeedback>
@@ -101,21 +78,9 @@ type FieldProps = {
   setFocused: (v: string | null) => void
   secure?: boolean
   keyboard?: 'email-address' | 'default'
-  value?: string
-onChangeText?: (v: string) => void
 }
 
-const Field = ({
-  icon,
-  placeholder,
-  id,
-  focused,
-  setFocused,
-  secure,
-  keyboard,
-  value,
-  onChangeText
-}: FieldProps) => (
+const Field = ({ icon, placeholder, id, focused, setFocused, secure, keyboard }: FieldProps) => (
   <View style={[fStyles.wrap, focused === id && fStyles.wrapFocused]}>
     <MaterialCommunityIcons
       name={icon as any}
@@ -124,17 +89,15 @@ const Field = ({
       style={fStyles.icon}
     />
     <TextInput
-    style={fStyles.input}
-    placeholder={placeholder}
-    placeholderTextColor={MUTED}
-    secureTextEntry={secure}
-    keyboardType={keyboard ?? 'default'}
-    value={value}
-    onChangeText={onChangeText}
-    autoCapitalize="none"
-    onFocus={() => setFocused(id)}
-    onBlur={() => setFocused(null)}
-/>
+      style={fStyles.input}
+      placeholder={placeholder}
+      placeholderTextColor={MUTED}
+      secureTextEntry={secure}
+      keyboardType={keyboard ?? 'default'}
+      autoCapitalize="none"
+      onFocus={() => setFocused(id)}
+      onBlur={() => setFocused(null)}
+    />
   </View>
 )
 
@@ -163,29 +126,9 @@ type FormProps = {
   setFocused: (v: string | null) => void
   onRegister?: () => void
   onBack?: () => void
-
-  usuario?: string
-  password?: string
-
-  setUsuario?: (v: string) => void
-  setPassword?: (v: string) => void
-
-  onLogin?: (
-    usuario: string,
-    password: string
-  ) => Promise<void>
 }
 
-const LoginForm = ({
-    focused,
-    setFocused,
-    onRegister,
-    usuario,
-    password,
-    setUsuario,
-    setPassword,
-    onLogin
-}: FormProps) => (
+const LoginForm = ({ focused, setFocused, onRegister }: FormProps) => (
   <View>
     <View style={styles.iconWrap}>
       <View style={styles.iconCircle}>
@@ -198,15 +141,8 @@ const LoginForm = ({
 
     <View style={styles.fieldGroup}>
       <Text style={styles.label}>Correo electrónico</Text>
-      <Field
-    id="email"
-    icon="email-outline"
-    placeholder="Tu usuario"
-    focused={focused}
-    setFocused={setFocused}
-    value={usuario}
-    onChangeText={setUsuario}
-/>
+      <Field id="email" icon="email-outline" placeholder="tu@correo.com"
+             keyboard="email-address" focused={focused} setFocused={setFocused} />
     </View>
 
     <View style={styles.fieldGroup}>
@@ -214,43 +150,14 @@ const LoginForm = ({
         <Text style={styles.label}>Contraseña</Text>
         <Text style={styles.forgotText}>¿Olvidaste tu contraseña?</Text>
       </View>
-      <Field
-    id="pass"
-    icon="lock-outline"
-    placeholder="••••••••"
-    secure
-    focused={focused}
-    setFocused={setFocused}
-    value={password}
-    onChangeText={setPassword}
-/>
+      <Field id="pass" icon="lock-outline" placeholder="••••••••"
+             secure focused={focused} setFocused={setFocused} />
     </View>
 
-    <TouchableOpacity
-    style={styles.primaryBtn}
-    activeOpacity={0.85}
-    onPress={async () => {
-
-        if (!usuario || !password) {
-            return
-        }
-
-        if (onLogin) {
-            await onLogin(usuario, password)
-        }
-
-    }}
->
-    <Text style={styles.primaryBtnText}>
-        Iniciar sesión
-    </Text>
-
-    <MaterialCommunityIcons
-        name="arrow-right"
-        size={16}
-        color={WHITE}
-    />
-</TouchableOpacity>
+    <TouchableOpacity style={styles.primaryBtn} activeOpacity={0.85}>
+      <Text style={styles.primaryBtnText}>Iniciar sesión</Text>
+      <MaterialCommunityIcons name="arrow-right" size={16} color={WHITE} />
+    </TouchableOpacity>
 
     <View style={styles.divider}>
       <View style={styles.dividerLine} />

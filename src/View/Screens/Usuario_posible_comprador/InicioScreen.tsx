@@ -5,15 +5,14 @@ import {
   TouchableOpacity,
   Image,
   StatusBar,
-  StyleSheet,
   FlatList,
   Dimensions,
+  StyleSheet,
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from 'react-native'
 import React, { useRef, useState, useEffect } from 'react'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import { LinearGradient } from 'expo-linear-gradient';
 import LoginButton from '../../components/LoginButton'
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
@@ -24,11 +23,7 @@ const CARD_SIDE_PADDING = 20
 const GREEN = '#2fb676'
 const BLUE = '#4D9FFF'
 const BG = '#0A0F1E'
-const CARD_BG = '#ffffff'
-const CARD_BG_DARK = '#131929'
-const HERO_BG = '#1A2744'
 const WHITE = '#ffffff'
-const OFF_WHITE = '#f4f7ff'
 const SUBTLE = '#e8edf8'
 const TEXT_DARK = '#0d1b3e'
 const TEXT_MID = '#4a5578'
@@ -170,6 +165,32 @@ const CAR_MODELS = [
   },
 ]
 
+// sombras reutilizadas
+const shadowSm = {
+  shadowColor: '#0d1b3e',
+  shadowOpacity: 0.06,
+  shadowRadius: 8,
+  elevation: 2,
+}
+const shadowMd = {
+  shadowColor: '#0d1b3e',
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
+  elevation: 3,
+}
+const shadowDark = {
+  shadowColor: '#000',
+  shadowOpacity: 0.18,
+  shadowRadius: 16,
+  elevation: 6,
+}
+const shadowDarkStrong = {
+  shadowColor: '#000',
+  shadowOpacity: 0.15,
+  shadowRadius: 14,
+  elevation: 5,
+}
+
 const InicioScreen = () => {
   const flatListRef = useRef<FlatList>(null)
   const [activeIndex, setActiveIndex] = useState(0)
@@ -203,36 +224,44 @@ const InicioScreen = () => {
   }
 
   const renderCarCard = ({ item }: { item: typeof CAR_MODELS[0] }) => (
-    <View style={styles.carCard}>
-      <Image source={{ uri: item.image }} style={styles.carImage} resizeMode="cover" />
-      <View style={[styles.carCardBadge, item.badgeGreen ? styles.carCardBadgeGreen : styles.carCardBadgeBlue]}>
-        <Text style={[styles.carCardBadgeText, { color: item.badgeGreen ? GREEN : BLUE }]}>
+    <View style={[styles.card, { width: CARD_WIDTH }, shadowMd]}>
+      <Image source={{ uri: item.image }} style={styles.cardImage} resizeMode="cover" />
+      <View
+        style={[
+          styles.badge,
+          {
+            backgroundColor: item.badgeGreen ? `${GREEN}26` : `${BLUE}26`,
+            borderColor: item.badgeGreen ? `${GREEN}66` : `${BLUE}66`,
+          },
+        ]}
+      >
+        <Text style={[styles.badgeText, { color: item.badgeGreen ? GREEN : BLUE }]}>
           {item.badge}
         </Text>
       </View>
-      <View style={styles.carBody}>
-        <Text style={styles.carName}>{item.name}</Text>
-        <Text style={styles.carType}>{item.type}</Text>
+      <View style={styles.cardContent}>
+        <Text style={styles.cardName}>{item.name}</Text>
+        <Text style={styles.cardType}>{item.type}</Text>
 
-        <View style={styles.carStats}>
-          <View style={styles.carStatItem}>
+        <View style={styles.infoRow}>
+          <View style={styles.infoItem}>
             <MaterialCommunityIcons name="lightning-bolt" size={13} color={GREEN} />
-            <Text style={styles.carStatText}>{item.range}</Text>
+            <Text style={styles.infoText}>{item.range}</Text>
           </View>
-          <View style={styles.carStatDivider} />
-          <View style={styles.carStatItem}>
+          <View style={styles.divider} />
+          <View style={styles.infoItem}>
             <MaterialCommunityIcons name="ev-plug-type2" size={13} color={BLUE} />
-            <Text style={styles.carStatText}>{item.charge}</Text>
+            <Text style={styles.infoText}>{item.charge}</Text>
           </View>
         </View>
 
-        <View style={styles.carFooter}>
-          <Text style={styles.carPrice}>
+        <View style={styles.priceRow}>
+          <Text style={styles.priceText}>
             {item.price}
-            <Text style={styles.carCurrency}>{' USD'}</Text>
+            <Text style={styles.priceUsd}>{' USD'}</Text>
           </Text>
-          <TouchableOpacity style={styles.carCtaBtn}>
-            <Text style={styles.carCtaBtnText}>{'Ver'}</Text>
+          <TouchableOpacity style={styles.verButton}>
+            <Text style={styles.verButtonText}>{'Ver'}</Text>
             <MaterialCommunityIcons name="arrow-right" size={12} color={WHITE} />
           </TouchableOpacity>
         </View>
@@ -254,27 +283,27 @@ const InicioScreen = () => {
       <ScrollView
         style={styles.scroll}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={{ paddingBottom: 120 }}
       >
         {/* ── HERO BANNER ── */}
-        <View style={styles.heroBanner}>
-          <Image
-            source={{ uri: PLACEHOLDER_HERO }}
-            style={styles.heroImage}
-            resizeMode="cover"
-          />
+        <View style={[styles.hero, shadowDark]}>
+          <Image source={{ uri: PLACEHOLDER_HERO }} style={styles.heroImage} resizeMode="cover" />
           <View style={styles.heroOverlay}>
-            <View style={styles.heroBadge}>
+            <View
+              style={[styles.offerBadge, { backgroundColor: `${GREEN}33`, borderColor: `${GREEN}66` }]}
+            >
               <MaterialCommunityIcons name="fire" size={12} color={GREEN} />
-              <Text style={styles.heroBadgeText}>{' Oferta del mes'}</Text>
+              <Text style={styles.offerBadgeText}>
+                {' Oferta del mes'}
+              </Text>
             </View>
             <View style={styles.heroBottom}>
               <Text style={styles.heroTitle}>
                 {'Hasta 20% OFF\n'}
-                <Text style={styles.heroTitleGreen}>{'Neo 2024'}</Text>
+                <Text style={styles.heroTitleAccent}>{'Neo 2024'}</Text>
               </Text>
-              <TouchableOpacity style={styles.heroCta}>
-                <Text style={styles.heroCtaText}>{'Ver Modelos'}</Text>
+              <TouchableOpacity style={styles.heroButton}>
+                <Text style={styles.heroButtonText}>{'Ver Modelos'}</Text>
                 <MaterialCommunityIcons name="arrow-right" size={12} color={WHITE} />
               </TouchableOpacity>
             </View>
@@ -288,8 +317,8 @@ const InicioScreen = () => {
             { icon: 'ev-station', value: '45min', label: 'Carga rápida', color: BLUE },
             { icon: 'shield-check', value: '5★', label: 'Seguridad', color: '#a78bfa' },
           ].map((s, i) => (
-            <View key={i} style={styles.statCard}>
-              <View style={[styles.statIconBox, { backgroundColor: `${s.color}18` }]}>
+            <View key={i} style={[styles.statCard, shadowSm]}>
+              <View style={[styles.statIconWrap, { backgroundColor: `${s.color}18` }]}>
                 <MaterialCommunityIcons name={s.icon as any} size={18} color={s.color} />
               </View>
               <Text style={styles.statValue}>{s.value}</Text>
@@ -299,11 +328,11 @@ const InicioScreen = () => {
         </View>
 
         {/* ── MODELOS EN CARRUSEL ── */}
-        <View style={styles.carouselSection}>
-          <View style={styles.sectionHeader}>
+        <View style={styles.modelsSection}>
+          <View style={[styles.modelsHeader, { paddingHorizontal: CARD_SIDE_PADDING }]}>
             <Text style={styles.sectionTitle}>{'Modelos Destacados'}</Text>
-            <TouchableOpacity style={styles.sectionLinkRow}>
-              <Text style={styles.sectionLink}>{'Ver todos'}</Text>
+            <TouchableOpacity style={styles.verTodosButton}>
+              <Text style={styles.verTodosText}>{'Ver todos'}</Text>
               <MaterialCommunityIcons name="chevron-right" size={16} color={GREEN} />
             </TouchableOpacity>
           </View>
@@ -318,7 +347,11 @@ const InicioScreen = () => {
             snapToInterval={CARD_WIDTH + CARD_GAP}
             snapToAlignment="start"
             decelerationRate="fast"
-            contentContainerStyle={styles.carouselList}
+            contentContainerStyle={{
+              paddingLeft: CARD_SIDE_PADDING,
+              paddingRight: CARD_SIDE_PADDING - CARD_GAP,
+              gap: CARD_GAP,
+            }}
             onMomentumScrollEnd={onScrollEnd}
             getItemLayout={(_, index) => ({
               length: CARD_WIDTH + CARD_GAP,
@@ -328,7 +361,7 @@ const InicioScreen = () => {
           />
 
           {/* Dots */}
-          <View style={styles.dots}>
+          <View style={styles.dotsRow}>
             {CAR_MODELS.map((_, i) => (
               <TouchableOpacity
                 key={i}
@@ -337,558 +370,526 @@ const InicioScreen = () => {
                   setActiveIndex(i)
                 }}
               >
-                <View style={[styles.dot, i === activeIndex && styles.dotActive]} />
+                <View
+                  style={[
+                    styles.dot,
+                    i === activeIndex ? styles.dotActive : styles.dotInactive,
+                  ]}
+                />
               </TouchableOpacity>
             ))}
           </View>
         </View>
 
         {/* ── PLANES DE PAGO ── */}
-        <View style={styles.section}>
+        <View style={styles.plansSection}>
           <Text style={styles.sectionTitle}>{'Planes de Pago Flexibles'}</Text>
 
-          <View style={[styles.row, { marginTop: 16 }]}>
+          <View style={styles.plansRow}>
             {/* Crédito */}
-            <View style={[styles.planCard, styles.planCardBlue]}>
-              <View style={[styles.planIcon, { backgroundColor: '#dbeafe' }]}>
+            <View style={[styles.planCardBlue, shadowSm]}>
+              <View style={styles.planIconBlue}>
                 <MaterialCommunityIcons name="bank-outline" size={22} color={BLUE} />
               </View>
-              <Text style={styles.planLabel}>{'Crédito Automotriz'}</Text>
+              <Text style={styles.planLabel}>
+                {'Crédito Automotriz'}
+              </Text>
               <Text style={styles.planPrice}>
                 {'Desde\n'}
                 <Text style={{ color: BLUE }}>{'$499'}</Text>
-                <Text style={styles.planPriceSub}>{' USD/mes*'}</Text>
+                <Text style={styles.planPriceUnit}>{' USD/mes*'}</Text>
               </Text>
               <View style={styles.planFeatures}>
-                <View style={styles.planFeatureRow}>
+                <View style={styles.featureRow}>
                   <MaterialCommunityIcons name="check-circle" size={12} color={BLUE} />
-                  <Text style={styles.planFeatureText}>{'Plazos hasta 72 meses'}</Text>
+                  <Text style={styles.featureText}>{'Plazos hasta 72 meses'}</Text>
                 </View>
-                <View style={styles.planFeatureRow}>
+                <View style={styles.featureRow}>
                   <MaterialCommunityIcons name="check-circle" size={12} color={BLUE} />
-                  <Text style={styles.planFeatureText}>{'Tasa preferencial'}</Text>
+                  <Text style={styles.featureText}>{'Tasa preferencial'}</Text>
                 </View>
               </View>
-              <TouchableOpacity style={[styles.planBtn, { backgroundColor: BLUE }]}>
-                <Text style={styles.planBtnText}>{'Cotizar Ahora'}</Text>
+              <TouchableOpacity style={styles.creditButton}>
+                <Text style={styles.creditButtonText}>{'Cotizar Ahora'}</Text>
               </TouchableOpacity>
             </View>
 
             {/* Leasing */}
-            <View style={[styles.planCard, styles.planCardGreen]}>
-              <View style={[styles.planIcon, { backgroundColor: '#d1fae5' }]}>
+            <View style={[styles.planCardGreen, shadowSm]}>
+              <View style={styles.planIconGreen}>
                 <MaterialCommunityIcons name="car-key" size={22} color={GREEN} />
               </View>
-              <Text style={styles.planLabel}>{'Arrendamiento'}</Text>
+              <Text style={styles.planLabel}>
+                {'Arrendamiento'}
+              </Text>
               <Text style={styles.planPrice}>
                 {'Desde\n'}
                 <Text style={{ color: GREEN }}>{'$399'}</Text>
-                <Text style={styles.planPriceSub}>{' USD/mes*'}</Text>
+                <Text style={styles.planPriceUnit}>{' USD/mes*'}</Text>
               </Text>
               <View style={styles.planFeatures}>
-                <View style={styles.planFeatureRow}>
+                <View style={styles.featureRow}>
                   <MaterialCommunityIcons name="check-circle" size={12} color={GREEN} />
-                  <Text style={styles.planFeatureText}>{'Actualiza cada 3 años'}</Text>
+                  <Text style={styles.featureText}>{'Actualiza cada 3 años'}</Text>
                 </View>
-                <View style={styles.planFeatureRow}>
+                <View style={styles.featureRow}>
                   <MaterialCommunityIcons name="check-circle" size={12} color={GREEN} />
-                  <Text style={styles.planFeatureText}>{'Mantenimiento incluido'}</Text>
+                  <Text style={styles.featureText}>{'Mantenimiento incluido'}</Text>
                 </View>
               </View>
-              <TouchableOpacity style={[styles.planBtn, styles.planBtnOutlineGreen]}>
-                <Text style={[styles.planBtnText, { color: GREEN }]}>{'Más Información'}</Text>
+              <TouchableOpacity
+                style={[styles.leasingButton, { backgroundColor: `${GREEN}15`, borderColor: `${GREEN}55` }]}
+              >
+                <Text style={styles.leasingButtonText}>{'Más Información'}</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
 
         {/* ── BANNER: TEST DRIVE ── */}
-        <View style={styles.testDriveBanner}>
+        <View style={[styles.testDriveBanner, shadowDarkStrong]}>
           <View style={styles.testDriveLeft}>
-            <Text style={styles.testDriveEyebrow}>{'Experiencia real'}</Text>
+            <Text style={styles.testDriveEyebrow}>
+              {'Experiencia real'}
+            </Text>
             <Text style={styles.testDriveTitle}>{'Agenda tu\nTest Drive'}</Text>
-            <Text style={styles.testDriveSub}>{'Gratis · Sin compromiso'}</Text>
-            <TouchableOpacity style={styles.testDriveBtn}>
+            <Text style={styles.testDriveSubtitle}>{'Gratis · Sin compromiso'}</Text>
+            <TouchableOpacity style={styles.testDriveButton}>
               <MaterialCommunityIcons name="calendar-check-outline" size={13} color={WHITE} />
-              <Text style={styles.testDriveBtnText}>{' Reservar'}</Text>
+              <Text style={styles.testDriveButtonText}>{' Reservar'}</Text>
             </TouchableOpacity>
           </View>
-          <View style={styles.testDriveIconBox}>
+          <View
+            style={[styles.testDriveIconWrap, { backgroundColor: `${GREEN}20`, borderColor: `${GREEN}44` }]}
+          >
             <MaterialCommunityIcons name="car-electric" size={44} color={GREEN} />
           </View>
         </View>
-
       </ScrollView>
     </View>
   )
 }
 
-export default InicioScreen
-
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: BG,
+    backgroundColor: '#0A0F1E',
   },
-  scroll: {
-    flex: 1,
-    backgroundColor: OFF_WHITE,
-  },
-  scrollContent: {
-    paddingBottom: 120,
-  },
-
-  // ✅ HEADER FIJO — no está dentro del ScrollView
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
+    backgroundColor: '#0A0F1E',
     paddingHorizontal: 20,
-    paddingTop: 30,
     paddingBottom: 15,
-    backgroundColor: BG,
+    paddingTop: 30,
+  },
+  scroll: {
+    flex: 1,
+    backgroundColor: '#f4f7ff',
   },
 
-  headerSub: {
-    color: 'rgba(255,255,255,0.5)',
-    fontSize: 11,
-    fontWeight: '500',
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-  },
-  headerTitle: {
-    color: WHITE,
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginTop: 2,
-  },
-  avatarBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    alignItems: 'center',
-    justifyContent: 'center',
+  // Card
+  card: {
+    overflow: 'hidden',
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
+    borderColor: '#e8edf8',
+    backgroundColor: '#fff',
+  },
+  cardImage: {
+    height: 148,
+    width: '100%',
+  },
+  badge: {
+    position: 'absolute',
+    left: 12,
+    top: 12,
+    borderRadius: 9999,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  badgeText: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  cardContent: {
+    padding: 14,
+  },
+  cardName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#0d1b3e',
+  },
+  cardType: {
+    marginBottom: 10,
+    marginTop: 2,
+    fontSize: 11,
+    color: '#4a5578',
+  },
+  infoRow: {
+    marginBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderRadius: 10,
+    backgroundColor: '#f4f7ff',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  infoItem: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  infoText: {
+    flexShrink: 1,
+    fontSize: 10,
+    color: '#4a5578',
+  },
+  divider: {
+    height: 16,
+    width: 1,
+    backgroundColor: '#e8edf8',
+  },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  priceText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#0d1b3e',
+  },
+  priceUsd: {
+    fontSize: 11,
+    fontWeight: 'normal',
+    color: '#4a5578',
+  },
+  verButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    borderRadius: 10,
+    backgroundColor: '#0A0F1E',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  verButtonText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#fff',
   },
 
-  // HERO
-  heroBanner: {
+  // Hero
+  hero: {
     marginHorizontal: 16,
     marginTop: 12,
-    borderRadius: 24,
     overflow: 'hidden',
-    backgroundColor: HERO_BG,
-    shadowColor: '#000',
-    shadowOpacity: 0.18,
-    shadowRadius: 16,
-    elevation: 6,
+    borderRadius: 24,
+    backgroundColor: '#1A2744',
   },
   heroImage: {
-    width: '100%',
     height: 130,
+    width: '100%',
   },
   heroOverlay: {
     position: 'absolute',
-    top: 0, left: 0, right: 0, bottom: 0,
-    padding: 14,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     justifyContent: 'space-between',
+    padding: 14,
   },
-  heroBadge: {
-    alignSelf: 'flex-start',
+  offerBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: `${GREEN}33`,
+    alignSelf: 'flex-start',
+    borderRadius: 9999,
     borderWidth: 1,
-    borderColor: `${GREEN}66`,
-    borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 4,
   },
-  heroBadgeText: {
-    color: GREEN,
+  offerBadgeText: {
     fontSize: 10,
     fontWeight: 'bold',
-    letterSpacing: 1,
     textTransform: 'uppercase',
+    letterSpacing: 1,
+    color: '#2fb676',
   },
   heroBottom: {
     alignSelf: 'flex-start',
   },
   heroTitle: {
-    color: WHITE,
     fontSize: 15,
     fontWeight: 'bold',
     lineHeight: 20,
+    color: '#fff',
   },
-  heroTitleGreen: {
-    color: GREEN,
+  heroTitleAccent: {
+    color: '#2fb676',
   },
-  heroCta: {
+  heroButton: {
     marginTop: 8,
-    alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: BG,
+    gap: 6,
+    alignSelf: 'flex-start',
     borderRadius: 10,
+    backgroundColor: '#0A0F1E',
     paddingHorizontal: 14,
     paddingVertical: 7,
-    gap: 6,
   },
-  heroCtaText: {
-    color: WHITE,
+  heroButtonText: {
     fontSize: 11,
     fontWeight: 'bold',
     letterSpacing: 0.5,
+    color: '#fff',
   },
 
-  // STATS
+  // Stats
   statsRow: {
+    marginTop: 16,
     flexDirection: 'row',
     gap: 10,
     paddingHorizontal: 16,
-    marginTop: 16,
   },
   statCard: {
     flex: 1,
-    backgroundColor: WHITE,
-    borderRadius: 16,
-    padding: 14,
     alignItems: 'center',
     gap: 6,
-    shadowColor: '#0d1b3e',
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  statIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  statValue: {
-    color: TEXT_DARK,
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  statLabel: {
-    color: TEXT_MID,
-    fontSize: 9,
-    textAlign: 'center',
-    fontWeight: '500',
-  },
-
-  // CAROUSEL
-  carouselSection: {
-    marginTop: 24,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 14,
-    paddingHorizontal: CARD_SIDE_PADDING,
-  },
-  sectionTitle: {
-    color: TEXT_DARK,
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  sectionLinkRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  sectionLink: {
-    color: GREEN,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  carouselList: {
-    paddingLeft: CARD_SIDE_PADDING,
-    paddingRight: CARD_SIDE_PADDING - CARD_GAP,
-    gap: CARD_GAP,
-  },
-
-  // CAR CARD
-  carCard: {
-    width: CARD_WIDTH,
-    backgroundColor: WHITE,
-    borderWidth: 1,
-    borderColor: SUBTLE,
-    borderRadius: 20,
-    overflow: 'hidden',
-    shadowColor: '#0d1b3e',
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
-  },
-  carImage: {
-    width: '100%',
-    height: 148,
-  },
-  carCardBadge: {
-    position: 'absolute',
-    top: 12,
-    left: 12,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderWidth: 1,
-  },
-  carCardBadgeGreen: {
-    backgroundColor: `${GREEN}26`,
-    borderColor: `${GREEN}66`,
-  },
-  carCardBadgeBlue: {
-    backgroundColor: `${BLUE}26`,
-    borderColor: `${BLUE}66`,
-  },
-  carCardBadgeText: {
-    fontSize: 9,
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  carBody: {
+    borderRadius: 16,
+    backgroundColor: '#fff',
     padding: 14,
   },
-  carName: {
-    color: TEXT_DARK,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  carType: {
-    color: TEXT_MID,
-    fontSize: 11,
-    marginBottom: 10,
-    marginTop: 2,
-  },
-  carStats: {
-    flexDirection: 'row',
+  statIconWrap: {
+    height: 36,
+    width: 36,
     alignItems: 'center',
-    backgroundColor: OFF_WHITE,
+    justifyContent: 'center',
     borderRadius: 10,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    marginBottom: 12,
-    gap: 8,
   },
-  carStatItem: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+  statValue: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#0d1b3e',
   },
-  carStatText: {
-    color: TEXT_MID,
-    fontSize: 10,
-    flexShrink: 1,
+  statLabel: {
+    textAlign: 'center',
+    fontSize: 9,
+    fontWeight: '500',
+    color: '#4a5578',
   },
-  carStatDivider: {
-    width: 1,
-    height: 16,
-    backgroundColor: SUBTLE,
+
+  // Modelos
+  modelsSection: {
+    marginTop: 24,
   },
-  carFooter: {
+  modelsHeader: {
+    marginBottom: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  carPrice: {
-    color: TEXT_DARK,
+  sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#0d1b3e',
   },
-  carCurrency: {
-    color: TEXT_MID,
-    fontSize: 11,
-    fontWeight: 'normal',
-  },
-  carCtaBtn: {
+  verTodosButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: BG,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    gap: 4,
   },
-  carCtaBtnText: {
-    color: WHITE,
+  verTodosText: {
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: '600',
+    color: '#2fb676',
   },
-
-  // DOTS
-  dots: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+  dotsRow: {
     marginTop: 14,
-    gap: 5,
+    flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 5,
     paddingHorizontal: 20,
   },
   dot: {
-    width: 5,
+    marginVertical: 2,
     height: 5,
     borderRadius: 3,
-    backgroundColor: '#c8d0e0',
-    marginVertical: 2,
   },
   dotActive: {
     width: 16,
-    backgroundColor: GREEN,
+    backgroundColor: '#2fb676',
+  },
+  dotInactive: {
+    width: 5,
+    backgroundColor: '#c8d0e0',
   },
 
-  // SECTIONS
-  section: {
+  // Planes
+  plansSection: {
     marginTop: 28,
     paddingHorizontal: 16,
   },
-  row: {
+  plansRow: {
+    marginTop: 16,
     flexDirection: 'row',
     gap: 12,
   },
-
-  // PLAN CARDS
-  planCard: {
+  planCardBlue: {
     flex: 1,
     borderRadius: 16,
-    padding: 16,
     borderWidth: 1,
-    backgroundColor: WHITE,
-    shadowColor: '#0d1b3e',
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  planCardBlue: {
     borderColor: '#bfdbfe',
+    backgroundColor: '#fff',
+    padding: 16,
   },
   planCardGreen: {
+    flex: 1,
+    borderRadius: 16,
+    borderWidth: 1,
     borderColor: '#a7f3d0',
+    backgroundColor: '#fff',
+    padding: 16,
   },
-  planIcon: {
-    width: 40,
+  planIconBlue: {
+    marginBottom: 12,
     height: 40,
-    borderRadius: 12,
+    width: 40,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 12,
+    backgroundColor: '#dbeafe',
+  },
+  planIconGreen: {
     marginBottom: 12,
+    height: 40,
+    width: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    backgroundColor: '#d1fae5',
   },
   planLabel: {
-    color: TEXT_MID,
+    marginBottom: 4,
     fontSize: 10,
     fontWeight: '600',
-    letterSpacing: 1,
     textTransform: 'uppercase',
-    marginBottom: 4,
+    letterSpacing: 1,
+    color: '#4a5578',
   },
   planPrice: {
-    color: TEXT_DARK,
+    marginBottom: 12,
     fontSize: 16,
     fontWeight: 'bold',
     lineHeight: 22,
-    marginBottom: 12,
+    color: '#0d1b3e',
   },
-  planPriceSub: {
-    color: TEXT_MID,
+  planPriceUnit: {
     fontSize: 11,
     fontWeight: 'normal',
+    color: '#4a5578',
   },
   planFeatures: {
-    gap: 6,
     marginBottom: 16,
+    gap: 6,
   },
-  planFeatureRow: {
+  featureRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
-  planFeatureText: {
-    color: TEXT_MID,
+  featureText: {
     fontSize: 10,
+    color: '#4a5578',
   },
-  planBtn: {
-    borderRadius: 12,
-    paddingVertical: 10,
+  creditButton: {
     alignItems: 'center',
+    borderRadius: 12,
+    backgroundColor: '#4D9FFF',
+    paddingVertical: 10,
   },
-  planBtnOutlineGreen: {
-    backgroundColor: `${GREEN}15`,
-    borderWidth: 1,
-    borderColor: `${GREEN}55`,
-  },
-  planBtnText: {
+  creditButtonText: {
     fontSize: 11,
     fontWeight: 'bold',
-    color: WHITE,
+    color: '#fff',
+  },
+  leasingButton: {
+    alignItems: 'center',
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingVertical: 10,
+  },
+  leasingButtonText: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: '#2fb676',
   },
 
-  // TEST DRIVE
+  // Test drive
   testDriveBanner: {
     marginHorizontal: 16,
     marginTop: 24,
-    borderRadius: 20,
-    backgroundColor: BG,
-    padding: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 14,
-    elevation: 5,
+    borderRadius: 20,
+    backgroundColor: '#0A0F1E',
+    padding: 20,
   },
   testDriveLeft: {
     flex: 1,
     paddingRight: 16,
   },
   testDriveEyebrow: {
-    color: GREEN,
+    marginBottom: 4,
     fontSize: 10,
     fontWeight: 'bold',
-    letterSpacing: 2,
     textTransform: 'uppercase',
-    marginBottom: 4,
+    letterSpacing: 2,
+    color: '#2fb676',
   },
   testDriveTitle: {
-    color: WHITE,
     fontSize: 18,
     fontWeight: 'bold',
     lineHeight: 24,
+    color: '#fff',
   },
-  testDriveSub: {
-    color: 'rgba(255,255,255,0.45)',
-    fontSize: 12,
+  testDriveSubtitle: {
     marginTop: 4,
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.45)',
   },
-  testDriveBtn: {
+  testDriveButton: {
     marginTop: 14,
-    alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: GREEN,
+    alignSelf: 'flex-start',
     borderRadius: 12,
+    backgroundColor: '#2fb676',
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
-  testDriveBtnText: {
-    color: WHITE,
+  testDriveButtonText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: 'bold',
+    color: '#fff',
   },
-  testDriveIconBox: {
-    width: 80,
+  testDriveIconWrap: {
     height: 80,
-    borderRadius: 16,
-    backgroundColor: `${GREEN}20`,
-    borderWidth: 1,
-    borderColor: `${GREEN}44`,
+    width: 80,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 16,
+    borderWidth: 1,
   },
 })
+
+export default InicioScreen

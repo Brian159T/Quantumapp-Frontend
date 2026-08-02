@@ -6,10 +6,10 @@ import {
   TouchableOpacity,
   TextInput,
   Modal,
-  StyleSheet,
   SafeAreaView,
   StatusBar,
   Dimensions,
+  StyleSheet,
 } from 'react-native'
 import LoginButton from '../../components/LoginButton'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
@@ -46,6 +46,22 @@ const COLORES = [
   { id: '5', nombre: 'Silver Mist', hex: '#9ca3af' },
 ]
 
+const COLOR_ITEM_WIDTH = (width - 80) / 5
+
+// sombras reutilizadas
+const shadowForm = {
+  shadowColor: COLORS.navy,
+  shadowOpacity: 0.08,
+  shadowRadius: 20,
+  elevation: 4,
+}
+const shadowColorDot = {
+  shadowColor: '#000',
+  shadowOpacity: 0.15,
+  shadowRadius: 6,
+  elevation: 3,
+}
+
 interface FormData {
   nombre: string
   ci: string
@@ -64,98 +80,115 @@ function ReservaModal({ visible, form, onClose, onConfirm }: ReservaModalProps) 
   return (
     <Modal visible={visible} animationType="slide" transparent>
       <View style={styles.modalOverlay}>
-        <View style={styles.modalContainer}>
+        <View style={styles.modalSheet}>
           {/* Header */}
           <View style={styles.modalHeader}>
-            <View style={styles.modalHeaderAccent} />
+            <View style={styles.modalHeaderBar} />
             <Text style={styles.modalTitle}>Confirmar Reserva</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <Text style={styles.closeBtnText}>{'✕'}</Text>
+            <TouchableOpacity onPress={onClose} style={styles.modalCloseButton}>
+              <Text style={styles.modalCloseText}>{'✕'}</Text>
             </TouchableOpacity>
           </View>
 
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 20 }}
-          >
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
             {/* Car placeholder */}
             <View style={styles.carPlaceholder}>
-              <Text style={styles.carPlaceholderIcon}>{'🚗'}</Text>
-              <Text style={styles.carPlaceholderText}>{'Imagen del vehículo'}</Text>
+              <Text style={styles.carEmoji}>{'🚗'}</Text>
+              <Text style={styles.carPlaceholderLabel}>{'Imagen del vehículo'}</Text>
             </View>
 
             {/* Datos del cliente */}
-            <View style={styles.summarySection}>
-              <Text style={styles.summarySectionTitle}>{'DATOS DEL CLIENTE'}</Text>
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>{'Nombre Completo'}</Text>
-                <Text style={styles.summaryValue}>{form.nombre || '—'}</Text>
+            <View style={styles.infoSection}>
+              <Text style={styles.sectionLabel}>
+                {'DATOS DEL CLIENTE'}
+              </Text>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>{'Nombre Completo'}</Text>
+                <Text style={styles.infoValue}>
+                  {form.nombre || '—'}
+                </Text>
               </View>
-              <View style={styles.summaryDivider} />
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>{'Cédula de Identidad'}</Text>
-                <Text style={styles.summaryValue}>{form.ci || '—'}</Text>
+              <View style={styles.divider} />
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>{'Cédula de Identidad'}</Text>
+                <Text style={styles.infoValue}>{form.ci || '—'}</Text>
               </View>
             </View>
 
             {/* Datos del vehículo */}
-            <View style={styles.summarySection}>
-              <Text style={styles.summarySectionTitle}>{'VEHÍCULO SELECCIONADO'}</Text>
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>{'Modelo'}</Text>
-                <Text style={styles.summaryValue}>{form.modelo?.nombre || '—'}</Text>
+            <View style={styles.infoSection}>
+              <Text style={styles.sectionLabel}>
+                {'VEHÍCULO SELECCIONADO'}
+              </Text>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>{'Modelo'}</Text>
+                <Text style={styles.infoValue}>
+                  {form.modelo?.nombre || '—'}
+                </Text>
               </View>
-              <View style={styles.summaryDivider} />
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>{'Color'}</Text>
-                <View style={styles.summaryColorRow}>
+              <View style={styles.divider} />
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>{'Color'}</Text>
+                <View style={styles.colorValueRow}>
                   {form.color && (
-                    <View style={[styles.summaryColorDot, { backgroundColor: form.color.hex }]} />
+                    <View
+                      style={[styles.colorDot, { backgroundColor: form.color.hex }]}
+                    />
                   )}
-                  <Text style={styles.summaryValue}>{form.color?.nombre || '—'}</Text>
+                  <Text style={styles.infoValue}>
+                    {form.color?.nombre || '—'}
+                  </Text>
                 </View>
               </View>
-              <View style={styles.summaryDivider} />
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>{'Precio Base'}</Text>
-                <Text style={styles.summaryValue}>{form.modelo?.base || '—'}</Text>
+              <View style={styles.divider} />
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>{'Precio Base'}</Text>
+                <Text style={styles.infoValue}>
+                  {form.modelo?.base || '—'}
+                </Text>
               </View>
-              <View style={styles.summaryDivider} />
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>{'Descuento'}</Text>
-                <Text style={[styles.summaryValue, { color: COLORS.primary }]}>{form.modelo?.descuento || '—'}</Text>
+              <View style={styles.divider} />
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>{'Descuento'}</Text>
+                <Text style={styles.infoValueGreen}>
+                  {form.modelo?.descuento || '—'}
+                </Text>
               </View>
-              <View style={styles.summaryDivider} />
-              <View style={styles.summaryRow}>
-                <Text style={[styles.summaryLabel, { fontWeight: '700', color: COLORS.navy }]}>{'Total'}</Text>
-                <Text style={[styles.summaryValue, { fontWeight: '700', fontSize: 16, color: COLORS.navy }]}>{form.modelo?.precio || '—'}</Text>
+              <View style={styles.divider} />
+              <View style={styles.infoRow}>
+                <Text style={styles.totalLabel}>{'Total'}</Text>
+                <Text style={styles.totalValue}>
+                  {form.modelo?.precio || '—'}
+                </Text>
               </View>
             </View>
 
             {/* QR Section */}
-            <View style={styles.qrSection}>
-              <Text style={styles.summarySectionTitle}>{'PAGO QR'}</Text>
-              <View style={styles.qrBox}>
-                <View style={styles.qrPlaceholder}>
-                  <View style={styles.qrCorner} />
-                  <View style={[styles.qrCorner, { right: 0, left: undefined }]} />
-                  <View style={[styles.qrCorner, { bottom: 0, top: undefined }]} />
-                  <View style={[styles.qrCorner, { bottom: 0, top: undefined, right: 0, left: undefined }]} />
-                  <Text style={styles.qrIcon}>{'⬛'}</Text>
+            <View style={styles.infoSection}>
+              <Text style={styles.sectionLabel}>{'PAGO QR'}</Text>
+              <View style={styles.qrCenter}>
+                <View style={styles.qrBox}>
+                  <View style={[styles.qrCornerBase, styles.qrCornerTL]} />
+                  <View style={[styles.qrCornerBase, styles.qrCornerTR]} />
+                  <View style={[styles.qrCornerBase, styles.qrCornerBL]} />
+                  <View style={[styles.qrCornerBase, styles.qrCornerBR]} />
+                  <Text style={styles.qrPlaceholderIcon}>{'⬛'}</Text>
                   <Text style={styles.qrText}>{'Código QR de Pago'}</Text>
                   <Text style={styles.qrSubtext}>{'Se añadirá próximamente'}</Text>
                 </View>
               </View>
             </View>
 
-            <Text style={styles.reembolsable}>{'✓ El precio de reserva es reembolsable'}</Text>
+            <Text style={styles.refundNote}>
+              {'✓ El precio de reserva es reembolsable'}
+            </Text>
 
             {/* Botones */}
-            <TouchableOpacity style={styles.confirmBtn} onPress={onConfirm}>
-              <Text style={styles.confirmBtnText}>{'EFECTUAR PAGO Y CONFIRMAR'}</Text>
+            <TouchableOpacity style={styles.primaryButton} onPress={onConfirm}>
+              <Text style={styles.primaryButtonText}>{'EFECTUAR PAGO Y CONFIRMAR'}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
-              <Text style={styles.cancelBtnText}>{'Cancelar'}</Text>
+            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
+              <Text style={styles.cancelButtonText}>{'Cancelar'}</Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
@@ -195,10 +228,10 @@ export class ReservasScreen extends Component<{}, State> {
     const isFormValid = form.nombre && form.ci && form.modelo && form.color
 
     return (
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView style={styles.root}>
         <StatusBar barStyle="light-content" backgroundColor={COLORS.navy} />
 
-        {/* ✅ FIX: Header sin texto suelto ni espacios extra */}
+        {/* Header */}
         <View style={styles.header}>
           <LoginButton onPress={() => {}} />
         </View>
@@ -210,22 +243,28 @@ export class ReservasScreen extends Component<{}, State> {
         >
           {/* Banner */}
           <View style={styles.banner}>
-            <View style={styles.bannerTextCol}>
-              <Text style={styles.bannerTitle}>{'Reserva ahora,\nmaneja el futuro'}</Text>
-              <Text style={styles.bannerSub}>{'Garantiza tu lugar con\nsolo $1,000 USD'}</Text>
+            <View style={styles.bannerText}>
+              <Text style={styles.bannerTitle}>
+                {'Reserva ahora,\nmaneja el futuro'}
+              </Text>
+              <Text style={styles.bannerSubtitle}>
+                {'Garantiza tu lugar con\nsolo $1,000 USD'}
+              </Text>
             </View>
-            <View style={styles.bannerCarBox}>
+            <View style={styles.bannerIconWrap}>
               <MaterialCommunityIcons name="car-sports" size={70} color={COLORS.primary} />
             </View>
           </View>
 
           {/* Formulario */}
-          <View style={styles.formCard}>
-            <Text style={styles.sectionTitle}>{'Datos Personales'}</Text>
+          <View style={[styles.formCard, shadowForm]}>
+            <Text style={styles.formSectionTitle}>
+              {'Datos Personales'}
+            </Text>
 
             <Text style={styles.inputLabel}>{'Nombre Completo'}</Text>
             <TextInput
-              style={styles.input}
+              style={styles.textInput}
               placeholder="Ej. Juan Pérez Mamani"
               placeholderTextColor={COLORS.grayMid}
               value={form.nombre}
@@ -234,7 +273,7 @@ export class ReservasScreen extends Component<{}, State> {
 
             <Text style={styles.inputLabel}>{'Cédula de Identidad'}</Text>
             <TextInput
-              style={styles.input}
+              style={styles.textInput}
               placeholder="Ej. 12345678"
               placeholderTextColor={COLORS.grayMid}
               keyboardType="number-pad"
@@ -242,71 +281,114 @@ export class ReservasScreen extends Component<{}, State> {
               onChangeText={v => this.setState({ form: { ...form, ci: v } })}
             />
 
-            <Text style={[styles.sectionTitle, { marginTop: 24 }]}>{'Selecciona tu Modelo'}</Text>
-            {MODELOS.map(m => (
-              <TouchableOpacity
-                key={m.id}
-                style={[styles.modelCard, form.modelo?.id === m.id && styles.modelCardSelected]}
-                onPress={() => this.setState({ form: { ...form, modelo: m } })}
-              >
-                <View style={styles.modelCarBox}>
-                  <Text style={styles.modelCarEmoji}>{'🚙'}</Text>
-                </View>
-                <View style={styles.modelInfo}>
-                  <Text style={[styles.modelNombre, form.modelo?.id === m.id && { color: COLORS.primary }]}>
-                    {m.nombre}
-                  </Text>
-                  <Text style={styles.modelPrecioBase}>
-                    {m.base}
-                    <Text style={styles.modelDescuento}>{' ' + m.descuento}</Text>
-                  </Text>
-                  <Text style={styles.modelTotal}>{'Total: ' + m.precio}</Text>
-                </View>
-                <View style={[styles.radioOuter, form.modelo?.id === m.id && styles.radioOuterSelected]}>
-                  {form.modelo?.id === m.id && <View style={styles.radioInner} />}
-                </View>
-              </TouchableOpacity>
-            ))}
-
-            <Text style={[styles.sectionTitle, { marginTop: 24 }]}>{'Elige tu Color'}</Text>
-            <View style={styles.colorRow}>
-              {COLORES.map(c => (
+            <Text style={[styles.formSectionTitle, styles.formSectionTitleMt]}>
+              {'Selecciona tu Modelo'}
+            </Text>
+            {MODELOS.map(m => {
+              const selected = form.modelo?.id === m.id
+              return (
                 <TouchableOpacity
-                  key={c.id}
-                  style={styles.colorItem}
-                  onPress={() => this.setState({ form: { ...form, color: c } })}
+                  key={m.id}
+                  style={[
+                    styles.modelOption,
+                    selected ? styles.modelOptionSelected : styles.modelOptionUnselected,
+                  ]}
+                  onPress={() => this.setState({ form: { ...form, modelo: m } })}
                 >
-                  <View style={[
-                    styles.colorCircle,
-                    { backgroundColor: c.hex },
-                    c.border ? styles.colorCircleBorder : null,
-                    form.color?.id === c.id && styles.colorCircleSelected,
-                  ]}>
-                    {form.color?.id === c.id && <Text style={styles.colorCheck}>{'✓'}</Text>}
+                  <View style={styles.modelEmojiWrap}>
+                    <Text style={styles.modelEmoji}>{'🚙'}</Text>
                   </View>
-                  <Text style={[styles.colorName, form.color?.id === c.id && { color: COLORS.primary, fontWeight: '700' }]}>
-                    {c.nombre}
-                  </Text>
+                  <View style={styles.modelOptionInfo}>
+                    <Text
+                      style={[
+                        styles.modelOptionName,
+                        selected ? styles.modelOptionNameSelected : styles.modelOptionNameUnselected,
+                      ]}
+                    >
+                      {m.nombre}
+                    </Text>
+                    <Text style={styles.modelBasePrice}>
+                      {m.base}
+                      <Text style={styles.modelDiscount}>{' ' + m.descuento}</Text>
+                    </Text>
+                    <Text style={styles.modelTotalPrice}>{'Total: ' + m.precio}</Text>
+                  </View>
+                  <View
+                    style={[
+                      styles.radioCircle,
+                      selected ? styles.radioCircleSelected : styles.radioCircleUnselected,
+                    ]}
+                  >
+                    {selected && <View style={styles.radioDot} />}
+                  </View>
                 </TouchableOpacity>
-              ))}
+              )
+            })}
+
+            <Text style={[styles.formSectionTitle, styles.formSectionTitleMt]}>
+              {'Elige tu Color'}
+            </Text>
+            <View style={styles.colorsWrap}>
+              {COLORES.map(c => {
+                const selected = form.color?.id === c.id
+                return (
+                  <TouchableOpacity
+                    key={c.id}
+                    style={[styles.colorOption, { width: COLOR_ITEM_WIDTH }]}
+                    onPress={() => this.setState({ form: { ...form, color: c } })}
+                  >
+                    <View
+                      style={[
+                        styles.colorDotCircle,
+                        shadowColorDot,
+                        { backgroundColor: c.hex },
+                        c.border && styles.colorDotBorder,
+                        selected && styles.colorDotSelected,
+                      ]}
+                    >
+                      {selected && (
+                        <Text
+                          style={styles.colorCheckmark}
+                          
+                        >
+                          {'✓'}
+                        </Text>
+                      )}
+                    </View>
+                    <Text
+                      style={[
+                        styles.colorLabel,
+                        selected ? styles.colorLabelSelected : styles.colorLabelUnselected,
+                      ]}
+                    >
+                      {c.nombre}
+                    </Text>
+                  </TouchableOpacity>
+                )
+              })}
             </View>
 
             {/* Precio reserva */}
-            <View style={styles.reservaInfo}>
-              <Text style={styles.reservaInfoText}>{'💳  Precio de Reserva'}</Text>
-              <Text style={styles.reservaInfoPrice}>{'$1,000 USD'}</Text>
+            <View style={styles.reservePriceRow}>
+              <Text style={styles.reservePriceLabel}>{'💳  Precio de Reserva'}</Text>
+              <Text style={styles.reservePriceValue}>{'$1,000 USD'}</Text>
             </View>
 
             <TouchableOpacity
-              style={[styles.reservarBtn, !isFormValid && styles.reservarBtnDisabled]}
+              style={[
+                styles.submitButton,
+                isFormValid ? styles.submitButtonActive : styles.submitButtonDisabled,
+              ]}
               onPress={this.handleReservar}
               disabled={!isFormValid}
             >
-              <Text style={styles.reservarBtnText}>{'CONFIRMAR Y PAGAR RESERVA'}</Text>
+              <Text style={styles.primaryButtonText}>{'CONFIRMAR Y PAGAR RESERVA'}</Text>
             </TouchableOpacity>
 
             {!isFormValid && (
-              <Text style={styles.validationMsg}>{'Completa todos los campos para continuar'}</Text>
+              <Text style={styles.helperText}>
+                {'Completa todos los campos para continuar'}
+              </Text>
             )}
           </View>
         </ScrollView>
@@ -322,49 +404,55 @@ export class ReservasScreen extends Component<{}, State> {
         {/* Modal de éxito */}
         <Modal visible={exitoVisible} animationType="fade" transparent>
           <View style={styles.modalOverlay}>
-            <View style={styles.exitoContainer}>
-              <View style={styles.exitoCheck}>
-                <Text style={styles.exitoCheckText}>{'✓'}</Text>
+            <View style={styles.successSheet}>
+              <View style={styles.successIconWrap}>
+                <Text style={styles.successIconText}>{'✓'}</Text>
               </View>
-              <Text style={styles.exitoTitle}>{'¡RESERVA EXITOSA!'}</Text>
+              <Text style={styles.successTitle}>
+                {'¡RESERVA EXITOSA!'}
+              </Text>
 
-              <View style={styles.exitoCarBox}>
-                <Text style={styles.exitoCarEmoji}>{'🚗'}</Text>
-              </View>
-
-              <View style={styles.exitoDetails}>
-                <View style={styles.summaryRow}>
-                  <Text style={styles.summaryLabel}>{'Vehículo'}</Text>
-                  <Text style={styles.summaryValue}>{form.modelo?.nombre}</Text>
-                </View>
-                <View style={styles.summaryDivider} />
-                <View style={styles.summaryRow}>
-                  <Text style={styles.summaryLabel}>{'Color'}</Text>
-                  <Text style={styles.summaryValue}>{form.color?.nombre}</Text>
-                </View>
-                <View style={styles.summaryDivider} />
-                <View style={styles.summaryRow}>
-                  <Text style={styles.summaryLabel}>{'Costo Reserva'}</Text>
-                  <Text style={styles.summaryValue}>{'$1,000 USD'}</Text>
-                </View>
-                <View style={styles.summaryDivider} />
-                <View style={styles.summaryRow}>
-                  <Text style={styles.summaryLabel}>{'Nº Confirmación'}</Text>
-                  <Text style={[styles.summaryValue, { color: COLORS.primary, fontWeight: '700' }]}>{confirmacion}</Text>
-                </View>
+              <View style={styles.successCarPlaceholder}>
+                <Text style={styles.successCarEmoji}>{'🚗'}</Text>
               </View>
 
-              <View style={styles.exitoNextSteps}>
-                <Text style={styles.exitoNextTitle}>{'Próximos Pasos'}</Text>
-                <Text style={styles.exitoNextItem}>{'• Revisa tu correo para más detalles'}</Text>
-                <Text style={styles.exitoNextItem}>{'• Un asesor de Voltus se pondrá en contacto'}</Text>
+              <View style={styles.infoSection}>
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>{'Vehículo'}</Text>
+                  <Text style={styles.infoValue}>
+                    {form.modelo?.nombre}
+                  </Text>
+                </View>
+                <View style={styles.divider} />
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>{'Color'}</Text>
+                  <Text style={styles.infoValue}>
+                    {form.color?.nombre}
+                  </Text>
+                </View>
+                <View style={styles.divider} />
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>{'Costo Reserva'}</Text>
+                  <Text style={styles.infoValue}>{'$1,000 USD'}</Text>
+                </View>
+                <View style={styles.divider} />
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>{'Nº Confirmación'}</Text>
+                  <Text style={styles.confirmationValue}>{confirmacion}</Text>
+                </View>
+              </View>
+
+              <View style={styles.nextStepsBox}>
+                <Text style={styles.nextStepsTitle}>{'Próximos Pasos'}</Text>
+                <Text style={styles.nextStepsItem}>{'• Revisa tu correo para más detalles'}</Text>
+                <Text style={styles.nextStepsItem}>{'• Un asesor de Voltus se pondrá en contacto'}</Text>
               </View>
 
               <TouchableOpacity
-                style={styles.confirmBtn}
+                style={styles.primaryButton}
                 onPress={() => this.setState({ exitoVisible: false, form: { nombre: '', ci: '', modelo: null, color: null } })}
               >
-                <Text style={styles.confirmBtnText}>{'IR A INICIO'}</Text>
+                <Text style={styles.primaryButtonText}>{'IR A INICIO'}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -375,215 +463,540 @@ export class ReservasScreen extends Component<{}, State> {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.navy },
-  scroll: { flex: 1, backgroundColor: COLORS.gray },
-
-  // Header — ✅ sin gap ni elementos extra que generen texto suelto
+  // Root / header / scroll
+  root: {
+    flex: 1,
+    backgroundColor: '#0A0F1E',
+  },
   header: {
-    backgroundColor: COLORS.navy,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
+    backgroundColor: '#0A0F1E',
     paddingHorizontal: 20,
-    paddingTop: 30,
     paddingBottom: 15,
+    paddingTop: 30,
+  },
+  scroll: {
+    flex: 1,
+    backgroundColor: '#f4f6fb',
   },
 
   // Banner
   banner: {
-    backgroundColor: COLORS.navyMid,
-    marginHorizontal: 16, marginTop: 16, marginBottom: 4,
-    borderRadius: 20,
-    padding: 20,
+    marginHorizontal: 16,
+    marginBottom: 4,
+    marginTop: 16,
     flexDirection: 'row',
     alignItems: 'center',
     overflow: 'hidden',
-  },
-  bannerTextCol: { flex: 1 },
-  bannerTitle: { fontSize: 20, fontWeight: '800', color: COLORS.white, lineHeight: 26 },
-  bannerSub: { fontSize: 13, color: COLORS.primary, marginTop: 6, lineHeight: 18 },
-  bannerCarBox: { width: 100, height: 70, alignItems: 'center', justifyContent: 'center' },
-  bannerCarEmoji: { fontSize: 50 },
-
-  // Form card
-  formCard: {
-    backgroundColor: COLORS.white,
-    margin: 16, borderRadius: 24,
+    borderRadius: 20,
+    backgroundColor: '#1a2f5e',
     padding: 20,
-    shadowColor: COLORS.navy,
-    shadowOpacity: 0.08, shadowRadius: 20, elevation: 4,
   },
-  sectionTitle: {
-    fontSize: 13, fontWeight: '800', color: COLORS.navy,
-    letterSpacing: 1.2, marginBottom: 14,
+  bannerText: {
+    flex: 1,
+  },
+  bannerTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    lineHeight: 26,
+    color: '#fff',
+  },
+  bannerSubtitle: {
+    marginTop: 6,
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#2fb676',
+  },
+  bannerIconWrap: {
+    height: 70,
+    width: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // Formulario
+  formCard: {
+    margin: 16,
+    borderRadius: 24,
+    backgroundColor: '#fff',
+    padding: 20,
+  },
+  formSectionTitle: {
+    marginBottom: 14,
+    fontSize: 13,
+    fontWeight: '800',
     textTransform: 'uppercase',
+    letterSpacing: 1.2,
+    color: '#0A0F1E',
   },
-  inputLabel: { fontSize: 13, fontWeight: '600', color: COLORS.grayText, marginBottom: 6 },
-  input: {
-    borderWidth: 1.5, borderColor: COLORS.grayMid,
-    borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12,
-    fontSize: 15, color: COLORS.dark,
-    marginBottom: 16, backgroundColor: COLORS.gray,
+  formSectionTitleMt: {
+    marginTop: 24,
   },
-
-  // Model cards
-  modelCard: {
-    borderWidth: 1.5, borderColor: COLORS.grayMid,
-    borderRadius: 16, padding: 12, marginBottom: 10,
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: COLORS.cardBg,
+  inputLabel: {
+    marginBottom: 6,
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#6b7a99',
   },
-  modelCardSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: COLORS.primaryLight,
-  },
-  modelCarBox: { width: 70, height: 50, alignItems: 'center', justifyContent: 'center' },
-  modelCarEmoji: { fontSize: 36 },
-  modelInfo: { flex: 1 },
-  modelNombre: { fontSize: 14, fontWeight: '700', color: COLORS.navy },
-  modelPrecioBase: { fontSize: 12, color: COLORS.grayText, marginTop: 2 },
-  modelDescuento: { color: COLORS.primary, fontWeight: '700' },
-  modelTotal: { fontSize: 13, fontWeight: '800', color: COLORS.blue, marginTop: 2 },
-  radioOuter: {
-    width: 22, height: 22, borderRadius: 11,
-    borderWidth: 2, borderColor: COLORS.grayMid,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  radioOuterSelected: { borderColor: COLORS.primary },
-  radioInner: { width: 12, height: 12, borderRadius: 6, backgroundColor: COLORS.primary },
-
-  // Colors
-  colorRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 20 },
-  colorItem: { alignItems: 'center', width: (width - 80) / 5 },
-  colorCircle: {
-    width: 44, height: 44, borderRadius: 22,
-    alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 6, elevation: 3,
-  },
-  colorCircleBorder: { borderWidth: 1.5, borderColor: COLORS.grayMid },
-  colorCircleSelected: { borderWidth: 3, borderColor: COLORS.primary },
-  colorCheck: { color: COLORS.white, fontWeight: '900', fontSize: 18, textShadowColor: '#0005', textShadowRadius: 4 },
-  colorName: { fontSize: 9, color: COLORS.grayText, textAlign: 'center', marginTop: 4, fontWeight: '500' },
-
-  // Reserva info
-  reservaInfo: {
-    backgroundColor: COLORS.primaryLight,
-    borderRadius: 12, padding: 14,
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+  textInput: {
     marginBottom: 16,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#c8d0e0',
+    backgroundColor: '#f4f6fb',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: '#0a1628',
   },
-  reservaInfoText: { fontSize: 14, color: COLORS.navy, fontWeight: '600' },
-  reservaInfoPrice: { fontSize: 18, fontWeight: '900', color: COLORS.primary },
 
-  reservarBtn: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 16, paddingVertical: 16,
+  // Modelo
+  modelOption: {
+    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    padding: 12,
+  },
+  modelOptionSelected: {
+    borderColor: '#2fb676',
+    backgroundColor: '#e8f8f0',
+  },
+  modelOptionUnselected: {
+    borderColor: '#c8d0e0',
+    backgroundColor: '#f0f4ff',
+  },
+  modelEmojiWrap: {
+    height: 50,
+    width: 70,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modelEmoji: {
+    fontSize: 36,
+  },
+  modelOptionInfo: {
+    flex: 1,
+  },
+  modelOptionName: {
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  modelOptionNameSelected: {
+    color: '#2fb676',
+  },
+  modelOptionNameUnselected: {
+    color: '#0A0F1E',
+  },
+  modelBasePrice: {
+    marginTop: 2,
+    fontSize: 12,
+    color: '#6b7a99',
+  },
+  modelDiscount: {
+    fontWeight: 'bold',
+    color: '#2fb676',
+  },
+  modelTotalPrice: {
+    marginTop: 2,
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#1e4fd8',
+  },
+  radioCircle: {
+    height: 22,
+    width: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 11,
+    borderWidth: 2,
+  },
+  radioCircleSelected: {
+    borderColor: '#2fb676',
+  },
+  radioCircleUnselected: {
+    borderColor: '#c8d0e0',
+  },
+  radioDot: {
+    height: 12,
+    width: 12,
+    borderRadius: 6,
+    backgroundColor: '#2fb676',
+  },
+
+  // Colores
+  colorsWrap: {
+    marginBottom: 20,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  colorOption: {
     alignItems: 'center',
   },
-  reservarBtnDisabled: { backgroundColor: COLORS.grayMid },
-  reservarBtnText: { color: COLORS.white, fontSize: 14, fontWeight: '900', letterSpacing: 1 },
-  validationMsg: { textAlign: 'center', color: COLORS.grayText, fontSize: 12, marginTop: 10 },
-
-  // Modal
-  modalOverlay: {
-    flex: 1, backgroundColor: '#0009',
-    justifyContent: 'flex-end',
+  colorDotCircle: {
+    height: 44,
+    width: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 22,
   },
-  modalContainer: {
-    backgroundColor: COLORS.white,
-    borderTopLeftRadius: 28, borderTopRightRadius: 28,
-    maxHeight: '90%', padding: 20,
+  colorDotBorder: {
+    borderWidth: 1.5,
+    borderColor: '#c8d0e0',
+  },
+  colorDotSelected: {
+    borderWidth: 3,
+    borderColor: '#2fb676',
+  },
+  colorCheckmark: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#fff',
+    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowRadius: 4,
+    textShadowOffset: { width: 0, height: 0 },
+  },
+  colorLabel: {
+    marginTop: 4,
+    textAlign: 'center',
+    fontSize: 9,
+    fontWeight: '500',
+  },
+  colorLabelSelected: {
+    fontWeight: 'bold',
+    color: '#2fb676',
+  },
+  colorLabelUnselected: {
+    color: '#6b7a99',
+  },
+
+  // Precio reserva
+  reservePriceRow: {
+    marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 12,
+    backgroundColor: '#e8f8f0',
+    padding: 14,
+  },
+  reservePriceLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0A0F1E',
+  },
+  reservePriceValue: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#2fb676',
+  },
+
+  submitButton: {
+    alignItems: 'center',
+    borderRadius: 16,
+    paddingVertical: 16,
+  },
+  submitButtonActive: {
+    backgroundColor: '#2fb676',
+  },
+  submitButtonDisabled: {
+    backgroundColor: '#c8d0e0',
+  },
+  helperText: {
+    marginTop: 10,
+    textAlign: 'center',
+    fontSize: 12,
+    color: '#6b7a99',
+  },
+
+  // Modal compartido
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+  },
+  modalSheet: {
+    maxHeight: '90%',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    backgroundColor: '#fff',
+    padding: 20,
   },
   modalHeader: {
-    flexDirection: 'row', alignItems: 'center',
-    marginBottom: 20, gap: 10,
+    marginBottom: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
-  modalHeaderAccent: {
-    width: 4, height: 24, borderRadius: 2, backgroundColor: COLORS.primary,
+  modalHeaderBar: {
+    height: 24,
+    width: 4,
+    borderRadius: 2,
+    backgroundColor: '#2fb676',
   },
-  modalTitle: { flex: 1, fontSize: 18, fontWeight: '800', color: COLORS.navy },
-  closeBtn: {
-    width: 32, height: 32, borderRadius: 16,
-    backgroundColor: COLORS.gray, alignItems: 'center', justifyContent: 'center',
+  modalTitle: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#0A0F1E',
   },
-  closeBtnText: { fontSize: 14, color: COLORS.grayText, fontWeight: '700' },
+  modalCloseButton: {
+    height: 32,
+    width: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 16,
+    backgroundColor: '#f4f6fb',
+  },
+  modalCloseText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#6b7a99',
+  },
 
   carPlaceholder: {
-    backgroundColor: COLORS.cardBg, borderRadius: 16,
-    height: 120, alignItems: 'center', justifyContent: 'center', marginBottom: 16,
+    marginBottom: 16,
+    height: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 16,
+    backgroundColor: '#f0f4ff',
   },
-  carPlaceholderIcon: { fontSize: 50 },
-  carPlaceholderText: { color: COLORS.grayText, fontSize: 12, marginTop: 4 },
+  carEmoji: {
+    fontSize: 48,
+  },
+  carPlaceholderLabel: {
+    marginTop: 4,
+    fontSize: 12,
+    color: '#6b7a99',
+  },
 
-  summarySection: {
-    backgroundColor: COLORS.gray, borderRadius: 16, padding: 16, marginBottom: 12,
+  infoSection: {
+    marginBottom: 12,
+    borderRadius: 16,
+    backgroundColor: '#f4f6fb',
+    padding: 16,
   },
-  summarySectionTitle: {
-    fontSize: 11, fontWeight: '800', color: COLORS.primary,
-    letterSpacing: 1.5, marginBottom: 12,
+  sectionLabel: {
+    marginBottom: 12,
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1.5,
+    color: '#2fb676',
   },
-  summaryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 6 },
-  summaryLabel: { fontSize: 13, color: COLORS.grayText, fontWeight: '500' },
-  summaryValue: { fontSize: 14, color: COLORS.navy, fontWeight: '600', textAlign: 'right', maxWidth: '55%' },
-  summaryColorRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  summaryColorDot: { width: 14, height: 14, borderRadius: 7, borderWidth: 1, borderColor: COLORS.grayMid },
-  summaryDivider: { height: 1, backgroundColor: COLORS.grayMid, opacity: 0.5 },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 6,
+  },
+  infoLabel: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#6b7a99',
+  },
+  infoValue: {
+    maxWidth: '55%',
+    textAlign: 'right',
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0A0F1E',
+  },
+  infoValueGreen: {
+    maxWidth: '55%',
+    textAlign: 'right',
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2fb676',
+  },
+  totalLabel: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#0A0F1E',
+  },
+  totalValue: {
+    maxWidth: '55%',
+    textAlign: 'right',
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#0A0F1E',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#c8d0e0',
+    opacity: 0.5,
+  },
+  colorValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  colorDot: {
+    height: 14,
+    width: 14,
+    borderRadius: 7,
+    borderWidth: 1,
+    borderColor: '#c8d0e0',
+  },
 
-  // QR
-  qrSection: { backgroundColor: COLORS.gray, borderRadius: 16, padding: 16, marginBottom: 12 },
-  qrBox: { alignItems: 'center' },
-  qrPlaceholder: {
-    width: 160, height: 160, borderRadius: 12,
-    borderWidth: 2, borderColor: COLORS.grayMid, borderStyle: 'dashed',
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: COLORS.white,
+  qrCenter: {
+    alignItems: 'center',
   },
-  qrCorner: {
-    position: 'absolute', top: 8, left: 8,
-    width: 20, height: 20,
-    borderTopWidth: 3, borderLeftWidth: 3,
-    borderColor: COLORS.primary, borderTopLeftRadius: 4,
+  qrBox: {
+    height: 160,
+    width: 160,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: '#c8d0e0',
+    backgroundColor: '#fff',
   },
-  qrIcon: { fontSize: 36, opacity: 0.2 },
-  qrText: { fontSize: 13, color: COLORS.grayText, fontWeight: '600', marginTop: 8 },
-  qrSubtext: { fontSize: 11, color: COLORS.grayMid, marginTop: 2 },
+  qrCornerBase: {
+    position: 'absolute',
+    height: 20,
+    width: 20,
+    borderTopLeftRadius: 4,
+    borderLeftWidth: 3,
+    borderTopWidth: 3,
+    borderColor: '#2fb676',
+  },
+  qrCornerTL: {
+    left: 8,
+    top: 8,
+  },
+  qrCornerTR: {
+    right: 8,
+    top: 8,
+  },
+  qrCornerBL: {
+    bottom: 8,
+    left: 8,
+  },
+  qrCornerBR: {
+    bottom: 8,
+    right: 8,
+  },
+  qrPlaceholderIcon: {
+    fontSize: 36,
+    opacity: 0.2,
+  },
+  qrText: {
+    marginTop: 8,
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#6b7a99',
+  },
+  qrSubtext: {
+    marginTop: 2,
+    fontSize: 11,
+    color: '#c8d0e0',
+  },
 
-  reembolsable: { textAlign: 'center', color: COLORS.primary, fontSize: 12, fontWeight: '600', marginBottom: 16 },
+  refundNote: {
+    marginBottom: 16,
+    textAlign: 'center',
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#2fb676',
+  },
 
-  confirmBtn: {
-    backgroundColor: COLORS.primary, borderRadius: 16,
-    paddingVertical: 16, alignItems: 'center', marginBottom: 10,
+  primaryButton: {
+    marginBottom: 10,
+    alignItems: 'center',
+    borderRadius: 16,
+    backgroundColor: '#2fb676',
+    paddingVertical: 16,
   },
-  confirmBtnText: { color: COLORS.white, fontSize: 14, fontWeight: '900', letterSpacing: 1 },
-  cancelBtn: { alignItems: 'center', paddingVertical: 10, marginBottom: 10 },
-  cancelBtnText: { color: COLORS.grayText, fontSize: 14, fontWeight: '600' },
+  primaryButtonText: {
+    fontSize: 14,
+    fontWeight: '900',
+    letterSpacing: 1,
+    color: '#fff',
+  },
+  cancelButton: {
+    marginBottom: 10,
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  cancelButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6b7a99',
+  },
 
-  // Éxito
-  exitoContainer: {
-    backgroundColor: COLORS.white,
-    borderTopLeftRadius: 28, borderTopRightRadius: 28,
-    padding: 24, maxHeight: '92%',
+  // Modal de éxito
+  successSheet: {
+    maxHeight: '92%',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    backgroundColor: '#fff',
+    padding: 24,
   },
-  exitoCheck: {
-    width: 64, height: 64, borderRadius: 32,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center', justifyContent: 'center',
-    alignSelf: 'center', marginBottom: 12,
+  successIconWrap: {
+    marginBottom: 12,
+    height: 64,
+    width: 64,
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 32,
+    backgroundColor: '#2fb676',
   },
-  exitoCheckText: { fontSize: 32, color: COLORS.white, fontWeight: '900' },
-  exitoTitle: {
-    textAlign: 'center', fontSize: 22, fontWeight: '900',
-    color: COLORS.navy, letterSpacing: 1, marginBottom: 16,
+  successIconText: {
+    fontSize: 30,
+    fontWeight: '900',
+    color: '#fff',
   },
-  exitoCarBox: {
-    backgroundColor: COLORS.cardBg, borderRadius: 16,
-    height: 100, alignItems: 'center', justifyContent: 'center', marginBottom: 16,
+  successTitle: {
+    marginBottom: 16,
+    textAlign: 'center',
+    fontSize: 24,
+    fontWeight: '900',
+    letterSpacing: 1,
+    color: '#0A0F1E',
   },
-  exitoCarEmoji: { fontSize: 60 },
-  exitoDetails: { backgroundColor: COLORS.gray, borderRadius: 16, padding: 16, marginBottom: 12 },
-  exitoNextSteps: { backgroundColor: COLORS.primaryLight, borderRadius: 16, padding: 16, marginBottom: 20 },
-  exitoNextTitle: { fontSize: 13, fontWeight: '800', color: COLORS.primary, marginBottom: 8 },
-  exitoNextItem: { fontSize: 13, color: COLORS.navy, marginBottom: 4 },
+  successCarPlaceholder: {
+    marginBottom: 16,
+    height: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 16,
+    backgroundColor: '#f0f4ff',
+  },
+  successCarEmoji: {
+    fontSize: 56,
+  },
+  confirmationValue: {
+    maxWidth: '55%',
+    textAlign: 'right',
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#2fb676',
+  },
+  nextStepsBox: {
+    marginBottom: 20,
+    borderRadius: 16,
+    backgroundColor: '#e8f8f0',
+    padding: 16,
+  },
+  nextStepsTitle: {
+    marginBottom: 8,
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#2fb676',
+  },
+  nextStepsItem: {
+    marginBottom: 4,
+    fontSize: 13,
+    color: '#0A0F1E',
+  },
 })
 
 export default ReservasScreen

@@ -11,7 +11,7 @@ import {
 } from 'react-native'
 import React, { useRef, useState } from 'react'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import LoginButton from '../../components/LoginButton'
+import LogoutButton from '../../components/LogoutButton'
 import { styles, SCREEN_WIDTH, CARD_WIDTH, CARD_GAP, CARD_SIDE_PADDING, GREEN, BLUE, ORANGE, RED, BG, WHITE, OFF_WHITE, SUBTLE, TEXT_DARK, TEXT_MID } from '../../../styles/InicioScreen_usuario_vehiculo.styles'
 // ── DATOS DEL VEHÍCULO (mock) ──
 const VEHICLE = {
@@ -143,7 +143,7 @@ const InicioScreen_usuario_vehiculo = () => {
           <Text style={styles.headerSub}>{'HOLA DE NUEVO'}</Text>
           <Text style={styles.headerTitle}>{'Tu Voltus'}</Text>
         </View>
-        <LoginButton onPress={() => {}} />
+        <LogoutButton />
       </View>
 
       <ScrollView

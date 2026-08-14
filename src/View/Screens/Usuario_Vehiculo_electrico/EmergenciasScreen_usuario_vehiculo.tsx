@@ -9,7 +9,7 @@ import {
 } from 'react-native'
 import React, { useState } from 'react'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import LoginButton from '../../components/LoginButton'
+import LogoutButton from '../../components/LogoutButton'
 import { styles, GREEN, BLUE, ORANGE, RED, BG, WHITE, OFF_WHITE, SUBTLE, TEXT_DARK, TEXT_MID } from '../../../styles/EmergenciasScreen_usuario_vehiculo.styles'
 
 
@@ -65,7 +65,7 @@ const EmergenciasScreen_usuario_vehiculo = () => {
           <Text style={styles.headerSub}>{'AYUDA INMEDIATA'}</Text>
           <Text style={styles.headerTitle}>{'Emergencias'}</Text>
         </View>
-        <LoginButton onPress={() => {}} />
+        <LogoutButton />
       </View>
 
       <ScrollView

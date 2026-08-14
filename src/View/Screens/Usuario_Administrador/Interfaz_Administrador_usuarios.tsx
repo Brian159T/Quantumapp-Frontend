@@ -10,7 +10,7 @@ import {
 } from 'react-native'
 import React, { useMemo, useState } from 'react'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import LoginButton from '../../components/LoginButton'
+import LogoutButton from '../../components/LogoutButton'
 import { styles, GREEN, BLUE, ORANGE, RED, PURPLE, BG, WHITE, OFF_WHITE, SUBTLE, TEXT_DARK, TEXT_MID } from '../../../styles/Interfaz_Administrador_usuarios'
 
 
@@ -346,7 +346,7 @@ const Interfaz_Administrador_usuarios = () => {
           <Text style={styles.headerSub}>{'PANEL DE CONTROL'}</Text>
           <Text style={styles.headerTitle}>{'Usuarios'}</Text>
         </View>
-        <LoginButton onPress={() => {}} />
+        <LogoutButton />
       </View>
 
       <ScrollView

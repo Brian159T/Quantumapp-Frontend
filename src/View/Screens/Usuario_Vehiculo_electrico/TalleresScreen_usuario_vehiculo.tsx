@@ -10,7 +10,7 @@ import {
 } from 'react-native'
 import React, { useMemo, useState } from 'react'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import LoginButton from '../../components/LoginButton'
+import LogoutButton from '../../components/LogoutButton'
 import { styles, GREEN, BLUE, ORANGE, RED, BG, WHITE, OFF_WHITE, SUBTLE, TEXT_DARK, TEXT_MID } from '../../../styles/TalleresScreen_usuario_vehiculo.styles'
 
 
@@ -208,7 +208,7 @@ const TalleresScreen_usuario_vehiculo = () => {
           <Text style={styles.headerSub}>{'SOPORTE TÉCNICO'}</Text>
           <Text style={styles.headerTitle}>{'Talleres Autorizados'}</Text>
         </View>
-        <LoginButton onPress={() => {}} />
+        <LogoutButton />
       </View>
 
       <ScrollView

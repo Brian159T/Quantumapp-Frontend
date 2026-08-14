@@ -12,7 +12,7 @@ import {
 } from 'react-native'
 import React, { useMemo, useState } from 'react'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import LoginButton from '../../components/LoginButton'
+import LogoutButton from '../../components/LogoutButton'
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
 
@@ -211,7 +211,7 @@ const EstacionesScreen_usuario_vehiculo = () => {
           <Text style={styles.headerSub}>{'ENCUENTRA TU'}</Text>
           <Text style={styles.headerTitle}>{'Carga Eléctrica'}</Text>
         </View>
-        <LoginButton onPress={() => {}} />
+        <LogoutButton />
       </View>
 
       <ScrollView

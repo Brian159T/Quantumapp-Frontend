@@ -177,7 +177,7 @@ const TalleresScreen_usuario_vehiculo = () => {
       <View style={styles.specialtiesRow}>
         {item.specialties.map(s => (
           <View key={s} style={styles.specialtyTag}>
-            <Text style={styles.specialtyTagText}>{s}</Text>
+            <Text style={[styles.specialtyTagText, { color: WHITE }]}>{s}</Text>
           </View>
         ))}
       </View>

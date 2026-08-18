@@ -179,7 +179,7 @@ const EstacionesScreen_usuario_vehiculo = () => {
         <View style={styles.connectorsRow}>
           {item.connectors.map(c => (
             <View key={c} style={styles.connectorTag}>
-              <Text style={styles.connectorTagText}>{c}</Text>
+              <Text style={[styles.connectorTagText, { color: WHITE }]}>{c}</Text>
             </View>
           ))}
         </View>

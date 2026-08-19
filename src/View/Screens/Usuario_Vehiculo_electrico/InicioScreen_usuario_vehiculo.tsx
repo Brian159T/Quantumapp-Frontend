@@ -13,6 +13,7 @@ import React, { useRef, useState } from 'react'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import LogoutButton from '../../components/LogoutButton'
 import { styles, SCREEN_WIDTH, CARD_WIDTH, CARD_GAP, CARD_SIDE_PADDING, GREEN, BLUE, ORANGE, RED, BG, WHITE, OFF_WHITE, SUBTLE, TEXT_DARK, TEXT_MID } from '../../../styles/InicioScreen_usuario_vehiculo.styles'
+import Saludo from '../../components/Saludo'
 // ── DATOS DEL VEHÍCULO (mock) ──
 const VEHICLE = {
   name: 'Voltus Neo',
@@ -140,8 +141,7 @@ const InicioScreen_usuario_vehiculo = () => {
       {/* ── HEADER FIJO ── */}
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.headerSub}>{'HOLA DE NUEVO'}</Text>
-          <Text style={styles.headerTitle}>{'Tu Voltus'}</Text>
+          <Saludo />
         </View>
         <LogoutButton />
       </View>

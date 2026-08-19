@@ -11,6 +11,7 @@ import React from 'react'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import LogoutButton from '../../components/LogoutButton'
 import { styles, GREEN, BLUE, ORANGE, PURPLE, RED, BG, WHITE, OFF_WHITE, SUBTLE, TEXT_DARK, TEXT_MID } from '../../../styles/Interfaz_Administrador_Inicio.styles'
+import Saludo from '../../components/Saludo'
 
 
 
@@ -100,8 +101,7 @@ const Interfaz_Administrador_Inicio = () => {
       {/* ── HEADER FIJO ── */}
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.headerSub}>{'PANEL DE CONTROL'}</Text>
-          <Text style={styles.headerTitle}>{'Administrador'}</Text>
+          <Saludo />
         </View>
         <LogoutButton />
       </View>

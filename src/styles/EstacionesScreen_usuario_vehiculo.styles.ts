@@ -412,4 +412,34 @@ export const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: 'bold',
   },
+  mapContainer: {
+  height: 300,
+  borderRadius: 20,
+  overflow: 'hidden',
+  marginBottom: 20,
+},
+
+map: {
+  width: '100%',
+  height: '100%',
+},
+
+marker: {
+  width: 42,
+  height: 42,
+  borderRadius: 21,
+  backgroundColor: GREEN,
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderWidth: 3,
+  borderColor: WHITE,
+  elevation: 5,
+  shadowColor: '#000',
+  shadowOffset: {
+    width: 0,
+    height: 2,
+  },
+  shadowOpacity: 0.3,
+  shadowRadius: 4,
+},
 })

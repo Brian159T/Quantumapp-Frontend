@@ -21,6 +21,11 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: BG,
   },
+  map: {
+  width: '100%',
+  height: 300,
+  borderRadius: 16,
+},
   scroll: {
     flex: 1,
     backgroundColor: OFF_WHITE,

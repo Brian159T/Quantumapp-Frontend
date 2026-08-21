@@ -1,25 +1,38 @@
 import axios from 'axios'
 import { AuthResponse, Credenciales } from './Usuario'
+import { API_URL } from '../Config/api'
 
-const API_URL = 'http://192.168.0.18:4000/api/auth' // TODO: mover a variable de entorno
+const AUTH_URL = `${API_URL}/auth`
 
-async function login({ correo, contrasena }: Credenciales): Promise<AuthResponse> {
+async function login({
+  correo,
+  contrasena,
+}: Credenciales): Promise<AuthResponse> {
+
   const response = await axios.post(
-    `${API_URL}/login`,
+    `${AUTH_URL}/login`,
     {
-        correo,
-        contrasena,
+      correo,
+      contrasena,
     }
-)
+  )
 
-return response.data.body
+  return response.data.body
 }
 
-async function registro({ correo, contrasena }: Credenciales): Promise<AuthResponse> {
-  const response = await axios.post<AuthResponse>(`${API_URL}/registro`, {
-    correo,
-    contrasena,
-  })
+async function registro({
+  correo,
+  contrasena,
+}: Credenciales): Promise<AuthResponse> {
+
+  const response = await axios.post<AuthResponse>(
+    `${AUTH_URL}/registro`,
+    {
+      correo,
+      contrasena,
+    }
+  )
+
   return response.data
 }
 

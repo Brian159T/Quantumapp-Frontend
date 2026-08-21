@@ -3,335 +3,1481 @@ import {
   Text,
   View,
   TouchableOpacity,
-  Image,
   StatusBar,
-  StyleSheet,
   FlatList,
   TextInput,
-  Dimensions,
+  ActivityIndicator,
 } from 'react-native'
-import React, { useMemo, useState } from 'react'
+
+import React, { useEffect, useMemo, useState } from 'react'
+
 import { MaterialCommunityIcons } from '@expo/vector-icons'
+
+import MapView, {
+  Marker,
+  Polyline,
+  Region,
+} from 'react-native-maps'
+
+import * as Location from 'expo-location'
+
 import LogoutButton from '../../components/LogoutButton'
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window')
+import EstacionesService, {
+  EstacionCarga,
+} from '../../../Model/EstacionesService'
 
-import { styles, GREEN, BLUE, ORANGE, RED, BG, WHITE, OFF_WHITE, SUBTLE, TEXT_DARK, TEXT_MID } from '../../../styles/EstacionesScreen_usuario_vehiculo.styles'
-type ConnectorType = 'CCS' | 'CHAdeMO' | 'Tipo 2' | 'Tesla'
+import {
+  styles,
+  GREEN,
+  BLUE,
+  ORANGE,
+  RED,
+  BG,
+  WHITE,
+  SUBTLE,
+  TEXT_MID,
+} from '../../../styles/EstacionesScreen_usuario_vehiculo.styles'
 
-type Station = {
-  id: string
-  name: string
-  address: string
-  distanceKm: number
-  available: number
-  total: number
-  pricePerKwh: string
-  rating: number
-  connectors: ConnectorType[]
-  speed: 'Rápida' | 'Ultra rápida' | 'Estándar'
-  open24h: boolean
+
+// =====================================================
+// TIPOS
+// =====================================================
+
+type Coordenada = {
+  latitude: number
+  longitude: number
 }
 
-const STATIONS: Station[] = [
-  {
-    id: '1',
-    name: 'Voltus Hub San Miguel',
-    address: 'Av. Ballivián #620, La Paz',
-    distanceKm: 1.2,
-    available: 4,
-    total: 6,
-    pricePerKwh: '$0.32',
-    rating: 4.8,
-    connectors: ['CCS', 'Tipo 2'],
-    speed: 'Ultra rápida',
-    open24h: true,
-  },
-  {
-    id: '2',
-    name: 'EcoCarga Obrajes',
-    address: 'Calle 15 de Obrajes',
-    distanceKm: 2.4,
-    available: 0,
-    total: 4,
-    pricePerKwh: '$0.28',
-    rating: 4.3,
-    connectors: ['CHAdeMO', 'CCS'],
-    speed: 'Rápida',
-    open24h: false,
-  },
-  {
-    id: '3',
-    name: 'Voltus Station Sopocachi',
-    address: 'Av. 20 de Octubre #2140',
-    distanceKm: 3.1,
-    available: 2,
-    total: 2,
-    pricePerKwh: '$0.30',
-    rating: 4.6,
-    connectors: ['Tipo 2', 'Tesla'],
-    speed: 'Estándar',
-    open24h: true,
-  },
-  {
-    id: '4',
-    name: 'GreenPlug Zona Sur',
-    address: 'Av. Montenegro #480, Calacoto',
-    distanceKm: 5.6,
-    available: 3,
-    total: 8,
-    pricePerKwh: '$0.35',
-    rating: 4.9,
-    connectors: ['CCS', 'CHAdeMO', 'Tipo 2'],
-    speed: 'Ultra rápida',
-    open24h: true,
-  },
-  {
-    id: '5',
-    name: 'ElectroPunto Miraflores',
-    address: 'Av. Saavedra #1780',
-    distanceKm: 4.0,
-    available: 1,
-    total: 3,
-    pricePerKwh: '$0.29',
-    rating: 4.1,
-    connectors: ['Tipo 2'],
-    speed: 'Rápida',
-    open24h: false,
-  },
-]
 
-const FILTERS: { key: ConnectorType | 'Todos'; icon: keyof typeof MaterialCommunityIcons.glyphMap }[] = [
-  { key: 'Todos', icon: 'lightning-bolt-circle' },
-  { key: 'CCS', icon: 'ev-plug-ccs2' },
-  { key: 'CHAdeMO', icon: 'ev-plug-chademo' },
-  { key: 'Tipo 2', icon: 'ev-plug-type2' },
-  { key: 'Tesla', icon: 'car-electric' },
-]
-
-const speedColor = (speed: Station['speed']) => {
-  if (speed === 'Ultra rápida') return GREEN
-  if (speed === 'Rápida') return BLUE
-  return ORANGE
-}
+// =====================================================
+// COMPONENTE
+// =====================================================
 
 const EstacionesScreen_usuario_vehiculo = () => {
+
+  // ===================================================
+  // ESTACIONES
+  // ===================================================
+
+  const [estaciones, setEstaciones] =
+    useState<EstacionCarga[]>([])
+
+  const [loadingEstaciones, setLoadingEstaciones] =
+    useState(true)
+
+  const [errorEstaciones, setErrorEstaciones] =
+    useState<string | null>(null)
+
+
+  // ===================================================
+  // UBICACIÓN DEL USUARIO
+  // ===================================================
+
+  const [ubicacionUsuario, setUbicacionUsuario] =
+    useState<Coordenada | null>(null)
+
+  const [loadingUbicacion, setLoadingUbicacion] =
+    useState(true)
+
+  const [errorUbicacion, setErrorUbicacion] =
+    useState<string | null>(null)
+
+
+  // ===================================================
+  // ESTACIÓN SELECCIONADA
+  // ===================================================
+
+  const [estacionSeleccionada, setEstacionSeleccionada] =
+    useState<EstacionCarga | null>(null)
+
+
+  // ===================================================
+  // BUSCADOR
+  // ===================================================
+
   const [search, setSearch] = useState('')
-  const [activeFilter, setActiveFilter] = useState<ConnectorType | 'Todos'>('Todos')
-  const [onlyAvailable, setOnlyAvailable] = useState(false)
 
-  const filteredStations = useMemo(() => {
-    return STATIONS.filter(s => {
-      const matchesSearch =
-        search.trim().length === 0 ||
-        s.name.toLowerCase().includes(search.toLowerCase()) ||
-        s.address.toLowerCase().includes(search.toLowerCase())
-      const matchesFilter = activeFilter === 'Todos' || s.connectors.includes(activeFilter)
-      const matchesAvailability = !onlyAvailable || s.available > 0
-      return matchesSearch && matchesFilter && matchesAvailability
-    }).sort((a, b) => a.distanceKm - b.distanceKm)
-  }, [search, activeFilter, onlyAvailable])
 
-  const totalAvailable = STATIONS.reduce((acc, s) => acc + s.available, 0)
-  const totalPorts = STATIONS.reduce((acc, s) => acc + s.total, 0)
+  // ===================================================
+  // CARGAR ESTACIONES
+  // ===================================================
 
-  const renderStation = ({ item }: { item: Station }) => {
-    const isFull = item.available === 0
-    return (
-      <View style={styles.stationCard}>
-        <View style={styles.stationTopRow}>
-          <View style={styles.stationIconBox}>
-            <MaterialCommunityIcons name="ev-station" size={22} color={GREEN} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.stationName} numberOfLines={1}>{item.name}</Text>
-            <View style={styles.stationAddressRow}>
-              <MaterialCommunityIcons name="map-marker-outline" size={12} color={TEXT_MID} />
-              <Text style={styles.stationAddress} numberOfLines={1}>{item.address}</Text>
-            </View>
-          </View>
-          <View style={styles.stationDistanceBox}>
-            <Text style={styles.stationDistanceValue}>{item.distanceKm.toFixed(1)}</Text>
-            <Text style={styles.stationDistanceUnit}>{'km'}</Text>
-          </View>
-        </View>
+  useEffect(() => {
 
-        <View style={styles.stationInfoRow}>
-          <View style={[styles.availabilityPill, isFull ? styles.availabilityPillRed : styles.availabilityPillGreen]}>
-            <View style={[styles.dotStatus, { backgroundColor: isFull ? RED : GREEN }]} />
-            <Text style={[styles.availabilityText, { color: isFull ? RED : GREEN }]}>
-              {isFull ? 'Sin disponibilidad' : `${item.available}/${item.total} disponibles`}
-            </Text>
-          </View>
+    const cargarEstaciones = async () => {
 
-          <View style={styles.speedPill}>
-            <MaterialCommunityIcons name="flash" size={11} color={speedColor(item.speed)} />
-            <Text style={[styles.speedPillText, { color: speedColor(item.speed) }]}>{item.speed}</Text>
-          </View>
+      try {
 
-          {item.open24h && (
-            <View style={styles.openPill}>
-              <Text style={styles.openPillText}>{'24h'}</Text>
-            </View>
-          )}
-        </View>
+        setLoadingEstaciones(true)
+        setErrorEstaciones(null)
 
-        <View style={styles.connectorsRow}>
-          {item.connectors.map(c => (
-            <View key={c} style={styles.connectorTag}>
-              <Text style={[styles.connectorTagText, { color: WHITE }]}>{c}</Text>
-            </View>
-          ))}
-        </View>
+        const data =
+          await EstacionesService.obtenerEstaciones()
 
-        <View style={styles.stationFooter}>
-          <View style={styles.stationFooterLeft}>
-            <MaterialCommunityIcons name="star" size={14} color={ORANGE} />
-            <Text style={styles.stationRating}>{item.rating.toFixed(1)}</Text>
-            <Text style={styles.stationDivider}>{'·'}</Text>
-            <Text style={styles.stationPrice}>{item.pricePerKwh}{' / kWh'}</Text>
-          </View>
+        console.log(
+          'Estaciones recibidas:',
+          data
+        )
 
-          <TouchableOpacity style={styles.routeBtn} activeOpacity={0.85}>
-            <MaterialCommunityIcons name="map-marker-path" size={14} color={WHITE} />
-            <Text style={styles.routeBtnText}>{'Ver ruta'}</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    )
+        setEstaciones(data)
+
+      } catch (error) {
+
+        console.error(
+          'Error al obtener estaciones:',
+          error
+        )
+
+        setErrorEstaciones(
+          'No se pudieron cargar las estaciones'
+        )
+
+      } finally {
+
+        setLoadingEstaciones(false)
+
+      }
+
+    }
+
+    cargarEstaciones()
+
+  }, [])
+
+
+  // ===================================================
+  // OBTENER UBICACIÓN DEL USUARIO
+  // ===================================================
+
+  useEffect(() => {
+
+    const obtenerUbicacion = async () => {
+
+      try {
+
+        setLoadingUbicacion(true)
+        setErrorUbicacion(null)
+
+        // Solicitar permiso
+
+        const {
+          status,
+        } =
+          await Location.requestForegroundPermissionsAsync()
+
+        if (status !== 'granted') {
+
+          setErrorUbicacion(
+            'Permiso de ubicación denegado'
+          )
+
+          return
+
+        }
+
+        // Obtener ubicación actual
+
+        const location =
+          await Location.getCurrentPositionAsync({
+            accuracy:
+              Location.Accuracy.High,
+          })
+
+        const coordenadas = {
+          latitude:
+            location.coords.latitude,
+
+          longitude:
+            location.coords.longitude,
+        }
+
+        console.log(
+          'Ubicación del usuario:',
+          coordenadas
+        )
+
+        setUbicacionUsuario(
+          coordenadas
+        )
+
+      } catch (error) {
+
+        console.error(
+          'Error obteniendo ubicación:',
+          error
+        )
+
+        setErrorUbicacion(
+          'No se pudo obtener tu ubicación'
+        )
+
+      } finally {
+
+        setLoadingUbicacion(false)
+
+      }
+
+    }
+
+    obtenerUbicacion()
+
+  }, [])
+
+
+  // ===================================================
+  // CALCULAR DISTANCIA
+  // ===================================================
+
+  const calcularDistancia = (
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+  ) => {
+
+    const R = 6371
+
+    const dLat =
+      ((lat2 - lat1) * Math.PI) / 180
+
+    const dLon =
+      ((lon2 - lon1) * Math.PI) / 180
+
+    const a =
+      Math.sin(dLat / 2) *
+        Math.sin(dLat / 2) +
+
+      Math.cos(
+        (lat1 * Math.PI) / 180
+      ) *
+
+      Math.cos(
+        (lat2 * Math.PI) / 180
+      ) *
+
+      Math.sin(dLon / 2) *
+        Math.sin(dLon / 2)
+
+    const c =
+      2 *
+      Math.atan2(
+        Math.sqrt(a),
+        Math.sqrt(1 - a)
+      )
+
+    return R * c
   }
 
-  return (
-    <View style={styles.root}>
-      <StatusBar barStyle="light-content" backgroundColor={BG} />
 
-      {/* ── HEADER FIJO ── */}
-      <View style={styles.header}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.headerSub}>{'ENCUENTRA TU'}</Text>
-          <Text style={styles.headerTitle}>{'Carga Eléctrica'}</Text>
+  // ===================================================
+  // ESTACIÓN MÁS CERCANA
+  // ===================================================
+  // NOTA: se tipa explícitamente el useMemo como
+  // EstacionCarga | null y se usa reduce en vez de
+  // forEach con variable mutable externa, para que
+  // TypeScript no infiera el tipo como "never".
+
+  const estacionMasCercana =
+    useMemo<EstacionCarga | null>(() => {
+
+      if (
+        !ubicacionUsuario ||
+        estaciones.length === 0
+      ) {
+        return null
+      }
+
+      const estacionesValidas =
+        estaciones.filter((estacion) => {
+
+          const lat =
+            Number(estacion.latitud)
+
+          const lon =
+            Number(estacion.longitud)
+
+          return (
+            !isNaN(lat) &&
+            !isNaN(lon)
+          )
+
+        })
+
+      if (estacionesValidas.length === 0) {
+        return null
+      }
+
+      const resultado =
+        estacionesValidas.reduce<{
+          estacion: EstacionCarga | null
+          distancia: number
+        }>(
+          (acc, estacion) => {
+
+            const lat =
+              Number(estacion.latitud)
+
+            const lon =
+              Number(estacion.longitud)
+
+            const distancia =
+              calcularDistancia(
+                ubicacionUsuario.latitude,
+                ubicacionUsuario.longitude,
+                lat,
+                lon
+              )
+
+            if (
+              distancia <
+              acc.distancia
+            ) {
+
+              return {
+                estacion,
+                distancia,
+              }
+
+            }
+
+            return acc
+
+          },
+          {
+            estacion: null,
+            distancia: Infinity,
+          }
+        )
+
+      return resultado.estacion
+
+    }, [
+      ubicacionUsuario,
+      estaciones,
+    ])
+
+
+  // ===================================================
+  // ESTACIÓN PARA MOSTRAR LA RUTA
+  // ===================================================
+
+  const estacionRuta =
+    estacionSeleccionada ||
+    estacionMasCercana
+
+
+  // ===================================================
+  // FILTRAR ESTACIONES
+  // ===================================================
+
+  const filteredStations =
+    useMemo(() => {
+
+      const texto =
+        search
+          .trim()
+          .toLowerCase()
+
+      if (!texto) {
+        return estaciones
+      }
+
+      return estaciones.filter(
+        (estacion) =>
+          estacion.direccion
+            ?.toLowerCase()
+            .includes(texto)
+      )
+
+    }, [
+      estaciones,
+      search,
+    ])
+
+
+  // ===================================================
+  // ESTADÍSTICAS
+  // ===================================================
+
+  const totalEstaciones =
+    estaciones.length
+
+  const estacionesActivas =
+    estaciones.filter(
+      (estacion) =>
+        estacion.Estado
+          ?.toLowerCase() === 'activo'
+    ).length
+
+
+  // ===================================================
+  // SELECCIONAR ESTACIÓN
+  // ===================================================
+
+  const seleccionarEstacion = (
+    estacion: EstacionCarga
+  ) => {
+
+    setEstacionSeleccionada(
+      estacion
+    )
+
+  }
+
+
+  // ===================================================
+  // RENDER ESTACIÓN
+  // ===================================================
+
+  const renderStation = ({
+    item,
+  }: {
+    item: EstacionCarga
+  }) => {
+
+    const activa =
+      item.Estado
+        ?.toLowerCase() === 'activo'
+
+    const distancia =
+      ubicacionUsuario
+        ? calcularDistancia(
+            ubicacionUsuario.latitude,
+            ubicacionUsuario.longitude,
+            Number(item.latitud),
+            Number(item.longitud)
+          )
+        : null
+
+    const esMasCercana =
+      estacionMasCercana?.id_estacion ===
+      item.id_estacion
+
+    return (
+
+      <View style={styles.stationCard}>
+
+        {/* ENCABEZADO */}
+
+        <View style={styles.stationTopRow}>
+
+          <View style={styles.stationIconBox}>
+
+            <MaterialCommunityIcons
+              name="ev-station"
+              size={22}
+              color={GREEN}
+            />
+
+          </View>
+
+
+          <View style={{ flex: 1 }}>
+
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}
+            >
+
+              <Text
+                style={styles.stationName}
+                numberOfLines={1}
+              >
+                {`Estación #${item.id_estacion}`}
+              </Text>
+
+              {esMasCercana && (
+
+                <View
+                  style={{
+                    marginLeft: 8,
+                    paddingHorizontal: 7,
+                    paddingVertical: 3,
+                    borderRadius: 10,
+                    backgroundColor:
+                      `${GREEN}22`,
+                  }}
+                >
+
+                  <Text
+                    style={{
+                      color: GREEN,
+                      fontSize: 9,
+                      fontWeight: '700',
+                    }}
+                  >
+                    MÁS CERCANA
+                  </Text>
+
+                </View>
+
+              )}
+
+            </View>
+
+
+            <View
+              style={
+                styles.stationAddressRow
+              }
+            >
+
+              <MaterialCommunityIcons
+                name="map-marker-outline"
+                size={12}
+                color={TEXT_MID}
+              />
+
+              <Text
+                style={
+                  styles.stationAddress
+                }
+                numberOfLines={2}
+              >
+                {item.direccion}
+              </Text>
+
+            </View>
+
+          </View>
+
         </View>
-        <LogoutButton />
+
+
+        {/* INFORMACIÓN */}
+
+        <View
+          style={
+            styles.stationInfoRow
+          }
+        >
+
+          <View
+            style={[
+              styles.availabilityPill,
+
+              activa
+                ? styles.availabilityPillGreen
+                : styles.availabilityPillRed,
+            ]}
+          >
+
+            <View
+              style={[
+                styles.dotStatus,
+                {
+                  backgroundColor:
+                    activa
+                      ? GREEN
+                      : RED,
+                },
+              ]}
+            />
+
+            <Text
+              style={[
+                styles.availabilityText,
+                {
+                  color:
+                    activa
+                      ? GREEN
+                      : RED,
+                },
+              ]}
+            >
+              {activa
+                ? 'Activa'
+                : item.Estado}
+            </Text>
+
+          </View>
+
+
+          <View
+            style={
+              styles.speedPill
+            }
+          >
+
+            <MaterialCommunityIcons
+              name="clock-outline"
+              size={11}
+              color={BLUE}
+            />
+
+            <Text
+              style={[
+                styles.speedPillText,
+                {
+                  color: BLUE,
+                },
+              ]}
+            >
+              {item.horarios}
+            </Text>
+
+          </View>
+
+        </View>
+
+
+        {/* DISTANCIA */}
+
+        {distancia !== null && (
+
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginTop: 10,
+            }}
+          >
+
+            <MaterialCommunityIcons
+              name="map-marker-distance"
+              size={15}
+              color={GREEN}
+            />
+
+            <Text
+              style={[
+                styles.stationAddress,
+                {
+                  marginLeft: 6,
+                  color: GREEN,
+                },
+              ]}
+            >
+              {`${distancia.toFixed(2)} km desde tu ubicación`}
+            </Text>
+
+          </View>
+
+        )}
+
+
+        {/* TELÉFONO */}
+
+        {item.telefono && (
+
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginTop: 10,
+            }}
+          >
+
+            <MaterialCommunityIcons
+              name="phone-outline"
+              size={14}
+              color={TEXT_MID}
+            />
+
+            <Text
+              style={[
+                styles.stationAddress,
+                {
+                  marginLeft: 6,
+                },
+              ]}
+            >
+              {item.telefono}
+            </Text>
+
+          </View>
+
+        )}
+
+
+        {/* COORDENADAS */}
+
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginTop: 8,
+          }}
+        >
+
+          <MaterialCommunityIcons
+            name="crosshairs-gps"
+            size={14}
+            color={GREEN}
+          />
+
+          <Text
+            style={[
+              styles.stationAddress,
+              {
+                marginLeft: 6,
+              },
+            ]}
+          >
+            {`${Number(item.latitud).toFixed(6)}, ${Number(
+              item.longitud
+            ).toFixed(6)}`}
+          </Text>
+
+        </View>
+
+
+        {/* BOTÓN */}
+
+        <View
+          style={
+            styles.stationFooter
+          }
+        >
+
+          <View
+            style={
+              styles.stationFooterLeft
+            }
+          >
+
+            <MaterialCommunityIcons
+              name="map-marker"
+              size={14}
+              color={GREEN}
+            />
+
+            <Text
+              style={
+                styles.stationPrice
+              }
+            >
+              Ubicación disponible
+            </Text>
+
+          </View>
+
+
+          <TouchableOpacity
+            style={
+              styles.routeBtn
+            }
+            activeOpacity={0.85}
+            onPress={() =>
+              seleccionarEstacion(item)
+            }
+          >
+
+            <MaterialCommunityIcons
+              name="map-marker-path"
+              size={14}
+              color={WHITE}
+            />
+
+            <Text
+              style={
+                styles.routeBtnText
+              }
+            >
+              Ver ruta
+            </Text>
+
+          </TouchableOpacity>
+
+        </View>
+
       </View>
+
+    )
+
+  }
+
+
+  // ===================================================
+  // PANTALLA
+  // ===================================================
+
+  return (
+
+    <View style={styles.root}>
+
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor={BG}
+      />
+
+
+      {/* HEADER */}
+
+      <View style={styles.header}>
+
+        <View
+          style={{
+            flex: 1,
+          }}
+        >
+
+          <Text
+            style={
+              styles.headerSub
+            }
+          >
+            ENCUENTRA TU
+          </Text>
+
+          <Text
+            style={
+              styles.headerTitle
+            }
+          >
+            Carga Eléctrica
+          </Text>
+
+        </View>
+
+        <LogoutButton />
+
+      </View>
+
 
       <ScrollView
         style={styles.scroll}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={
+          styles.scrollContent
+        }
       >
-        {/* ── BUSCADOR ── */}
-        <View style={styles.searchSection}>
-          <View style={styles.searchBar}>
-            <MaterialCommunityIcons name="magnify" size={18} color={TEXT_MID} />
-            <TextInput
-              placeholder="Buscar por nombre o dirección..."
-              placeholderTextColor={TEXT_MID}
-              value={search}
-              onChangeText={setSearch}
-              style={styles.searchInput}
-            />
-            <TouchableOpacity style={styles.locationBtn}>
-              <MaterialCommunityIcons name="crosshairs-gps" size={16} color={WHITE} />
-            </TouchableOpacity>
-          </View>
-        </View>
 
-        {/* ── MAPA (placeholder, se integrará mapa interactivo con ruta) ── */}
-        <View style={styles.mapPlaceholder}>
-          <MaterialCommunityIcons name="map-outline" size={30} color={`${GREEN}` } />
-          <Text style={styles.mapPlaceholderTitle}>{'Mapa interactivo'}</Text>
-          <Text style={styles.mapPlaceholderSub}>{'Aquí se mostrará la ruta más corta a la estación seleccionada'}</Text>
-        </View>
 
-        {/* ── STATS RÁPIDOS ── */}
-        <View style={styles.statsRow}>
-          <View style={styles.statCard}>
-            <View style={[styles.statIconBox, { backgroundColor: `${GREEN}18` }]}>
-              <MaterialCommunityIcons name="ev-station" size={18} color={GREEN} />
-            </View>
-            <Text style={styles.statValue}>{STATIONS.length}</Text>
-            <Text style={styles.statLabel}>{'Estaciones cerca'}</Text>
-          </View>
-          <View style={styles.statCard}>
-            <View style={[styles.statIconBox, { backgroundColor: `${BLUE}18` }]}>
-              <MaterialCommunityIcons name="power-plug" size={18} color={BLUE} />
-            </View>
-            <Text style={styles.statValue}>{totalAvailable}{`/${totalPorts}`}</Text>
-            <Text style={styles.statLabel}>{'Puntos libres'}</Text>
-          </View>
-          <View style={styles.statCard}>
-            <View style={[styles.statIconBox, { backgroundColor: `${ORANGE}18` }]}>
-              <MaterialCommunityIcons name="clock-fast" size={18} color={ORANGE} />
-            </View>
-            <Text style={styles.statValue}>{'~8min'}</Text>
-            <Text style={styles.statLabel}>{'Más cercana'}</Text>
-          </View>
-        </View>
+        {/* =========================================
+            BUSCADOR
+        ========================================= */}
 
-        {/* ── FILTROS DE CONECTOR ── */}
-        <View style={styles.filterSection}>
-          <Text style={styles.sectionTitle}>{'Tipo de conector'}</Text>
-          <View style={styles.filterRow}>
-            {FILTERS.map(f => {
-              const active = activeFilter === f.key
-              return (
-                <TouchableOpacity
-                  key={f.key}
-                  onPress={() => setActiveFilter(f.key)}
-                  style={[styles.filterChip, active && styles.filterChipActive]}
-                  activeOpacity={0.85}
-                >
-                  <MaterialCommunityIcons
-                    name={f.icon}
-                    size={14}
-                    color={active ? WHITE : TEXT_MID}
-                  />
-                  <Text style={[styles.filterChipText, active && styles.filterChipTextActive]}>
-                    {f.key}
-                  </Text>
-                </TouchableOpacity>
-              )
-            })}
-          </View>
+        <View
+          style={
+            styles.searchSection
+          }
+        >
 
-          <TouchableOpacity
-            style={styles.availabilityToggle}
-            onPress={() => setOnlyAvailable(!onlyAvailable)}
-            activeOpacity={0.85}
+          <View
+            style={
+              styles.searchBar
+            }
           >
-            <View style={[styles.checkbox, onlyAvailable && styles.checkboxActive]}>
-              {onlyAvailable && <MaterialCommunityIcons name="check" size={12} color={WHITE} />}
-            </View>
-            <Text style={styles.availabilityToggleText}>{'Mostrar solo disponibles ahora'}</Text>
-          </TouchableOpacity>
-        </View>
 
-        {/* ── LISTA DE ESTACIONES ── */}
-        <View style={styles.listSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{'Estaciones cercanas'}</Text>
-            <Text style={styles.resultsCount}>{`${filteredStations.length} resultados`}</Text>
+            <MaterialCommunityIcons
+              name="magnify"
+              size={18}
+              color={TEXT_MID}
+            />
+
+            <TextInput
+              placeholder="Buscar por dirección..."
+              placeholderTextColor={
+                TEXT_MID
+              }
+              value={search}
+              onChangeText={
+                setSearch
+              }
+              style={
+                styles.searchInput
+              }
+            />
+
           </View>
 
-          {filteredStations.length === 0 ? (
-            <View style={styles.emptyState}>
-              <MaterialCommunityIcons name="ev-station" size={32} color={SUBTLE} />
-              <Text style={styles.emptyStateText}>{'No encontramos estaciones con estos filtros'}</Text>
-            </View>
-          ) : (
-            <FlatList
-              data={filteredStations}
-              keyExtractor={item => item.id}
-              renderItem={renderStation}
-              scrollEnabled={false}
-              contentContainerStyle={{ gap: 12 }}
-            />
-          )}
         </View>
+
+
+        {/* =========================================
+            MAPA
+        ========================================= */}
+
+        <View
+          style={
+            styles.mapContainer
+          }
+        >
+
+          {loadingEstaciones ||
+          loadingUbicacion ? (
+
+            <View
+              style={{
+                flex: 1,
+                justifyContent:
+                  'center',
+                alignItems:
+                  'center',
+              }}
+            >
+
+              <ActivityIndicator
+                size="large"
+                color={GREEN}
+              />
+
+              <Text
+                style={{
+                  color: WHITE,
+                  marginTop: 10,
+                }}
+              >
+                Obteniendo ubicación...
+              </Text>
+
+            </View>
+
+          ) : errorEstaciones ||
+            errorUbicacion ? (
+
+            <View
+              style={{
+                flex: 1,
+                justifyContent:
+                  'center',
+                alignItems:
+                  'center',
+                padding: 20,
+              }}
+            >
+
+              <MaterialCommunityIcons
+                name="alert-circle-outline"
+                size={35}
+                color={RED}
+              />
+
+              <Text
+                style={{
+                  color: WHITE,
+                  marginTop: 10,
+                  textAlign:
+                    'center',
+                }}
+              >
+                {errorEstaciones ||
+                  errorUbicacion}
+              </Text>
+
+            </View>
+
+          ) : ubicacionUsuario ? (
+
+            <MapView
+              style={styles.map}
+
+              initialRegion={{
+                latitude:
+                  ubicacionUsuario.latitude,
+
+                longitude:
+                  ubicacionUsuario.longitude,
+
+                latitudeDelta:
+                  0.04,
+
+                longitudeDelta:
+                  0.04,
+              }}
+
+              showsUserLocation
+
+              showsMyLocationButton
+
+              showsCompass
+
+              showsTraffic={false}
+            >
+
+
+              {/* =================================
+                  ESTACIONES
+              ================================= */}
+
+              {estaciones.map(
+                (estacion) => {
+
+                  const latitude =
+                    Number(
+                      estacion.latitud
+                    )
+
+                  const longitude =
+                    Number(
+                      estacion.longitud
+                    )
+
+                  if (
+                    isNaN(latitude) ||
+                    isNaN(longitude)
+                  ) {
+                    return null
+                  }
+
+                  const seleccionada =
+                    estacionRuta?.id_estacion ===
+                    estacion.id_estacion
+
+                  return (
+
+                    <Marker
+                      key={
+                        estacion.id_estacion
+                      }
+
+                      coordinate={{
+                        latitude,
+                        longitude,
+                      }}
+
+                      title={
+                        `Estación #${estacion.id_estacion}`
+                      }
+
+                      description={
+                        estacion.direccion
+                      }
+
+                      onPress={() =>
+                        seleccionarEstacion(
+                          estacion
+                        )
+                      }
+                    >
+
+                      <View
+                        style={[
+                          styles.marker,
+
+                          seleccionada && {
+                            transform: [
+                              {
+                                scale: 1.25,
+                              },
+                            ],
+                          },
+                        ]}
+                      >
+
+                        <MaterialCommunityIcons
+                          name="ev-station"
+                          size={
+                            seleccionada
+                              ? 28
+                              : 24
+                          }
+                          color={WHITE}
+                        />
+
+                      </View>
+
+                    </Marker>
+
+                  )
+
+                }
+              )}
+
+
+              {/* =================================
+                  RUTA
+              ================================= */}
+
+              {ubicacionUsuario &&
+              estacionRuta && (
+
+                <Polyline
+                  coordinates={[
+                    ubicacionUsuario,
+
+                    {
+                      latitude:
+                        Number(
+                          estacionRuta.latitud
+                        ),
+
+                      longitude:
+                        Number(
+                          estacionRuta.longitud
+                        ),
+                    },
+                  ]}
+
+                  strokeColor={
+                    GREEN
+                  }
+
+                  strokeWidth={5}
+                />
+
+              )}
+
+            </MapView>
+
+          ) : null}
+
+        </View>
+
+
+        {/* =========================================
+            INFORMACIÓN DE RUTA
+        ========================================= */}
+
+        {ubicacionUsuario &&
+        estacionRuta && (
+
+          <View
+            style={{
+              marginTop: 12,
+              padding: 14,
+              borderRadius: 14,
+              backgroundColor:
+                `${GREEN}12`,
+              borderWidth: 1,
+              borderColor:
+                `${GREEN}30`,
+            }}
+          >
+
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}
+            >
+
+              <MaterialCommunityIcons
+                name="navigation-variant"
+                size={20}
+                color={GREEN}
+              />
+
+              <View
+                style={{
+                  flex: 1,
+                  marginLeft: 10,
+                }}
+              >
+
+                <Text
+                  style={{
+                    color: WHITE,
+                    fontWeight: '700',
+                    fontSize: 14,
+                  }}
+                >
+                  {estacionSeleccionada
+                    ? 'Ruta seleccionada'
+                    : 'Estación más cercana'}
+                </Text>
+
+                <Text
+                  style={{
+                    color: TEXT_MID,
+                    fontSize: 12,
+                    marginTop: 3,
+                  }}
+                  numberOfLines={1}
+                >
+                  {`Estación #${estacionRuta.id_estacion} · ${estacionRuta.direccion}`}
+                </Text>
+
+              </View>
+
+            </View>
+
+
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginTop: 10,
+              }}
+            >
+
+              <MaterialCommunityIcons
+                name="map-marker-distance"
+                size={16}
+                color={GREEN}
+              />
+
+              <Text
+                style={{
+                  color: GREEN,
+                  fontWeight: '700',
+                  marginLeft: 6,
+                }}
+              >
+                {`${calcularDistancia(
+                  ubicacionUsuario.latitude,
+                  ubicacionUsuario.longitude,
+                  Number(
+                    estacionRuta.latitud
+                  ),
+                  Number(
+                    estacionRuta.longitud
+                  )
+                ).toFixed(2)} km`}
+              </Text>
+
+              <Text
+                style={{
+                  color: TEXT_MID,
+                  marginLeft: 6,
+                }}
+              >
+                distancia aproximada
+              </Text>
+
+            </View>
+
+          </View>
+
+        )}
+
+
+        {/* =========================================
+            ESTADÍSTICAS
+        ========================================= */}
+
+        <View
+          style={
+            styles.statsRow
+          }
+        >
+
+          {/* TOTAL */}
+
+          <View
+            style={
+              styles.statCard
+            }
+          >
+
+            <View
+              style={[
+                styles.statIconBox,
+                {
+                  backgroundColor:
+                    `${GREEN}18`,
+                },
+              ]}
+            >
+
+              <MaterialCommunityIcons
+                name="ev-station"
+                size={18}
+                color={GREEN}
+              />
+
+            </View>
+
+            <Text
+              style={
+                styles.statValue
+              }
+            >
+              {totalEstaciones}
+            </Text>
+
+            <Text
+              style={
+                styles.statLabel
+              }
+            >
+              Estaciones
+            </Text>
+
+          </View>
+
+
+          {/* ACTIVAS */}
+
+          <View
+            style={
+              styles.statCard
+            }
+          >
+
+            <View
+              style={[
+                styles.statIconBox,
+                {
+                  backgroundColor:
+                    `${BLUE}18`,
+                },
+              ]}
+            >
+
+              <MaterialCommunityIcons
+                name="check-circle-outline"
+                size={18}
+                color={BLUE}
+              />
+
+            </View>
+
+            <Text
+              style={
+                styles.statValue
+              }
+            >
+              {estacionesActivas}
+            </Text>
+
+            <Text
+              style={
+                styles.statLabel
+              }
+            >
+              Activas
+            </Text>
+
+          </View>
+
+
+          {/* RESULTADOS */}
+
+          <View
+            style={
+              styles.statCard
+            }
+          >
+
+            <View
+              style={[
+                styles.statIconBox,
+                {
+                  backgroundColor:
+                    `${ORANGE}18`,
+                },
+              ]}
+            >
+
+              <MaterialCommunityIcons
+                name="map-search-outline"
+                size={18}
+                color={ORANGE}
+              />
+
+            </View>
+
+            <Text
+              style={
+                styles.statValue
+              }
+            >
+              {filteredStations.length}
+            </Text>
+
+            <Text
+              style={
+                styles.statLabel
+              }
+            >
+              Encontradas
+            </Text>
+
+          </View>
+
+        </View>
+
+
+        {/* =========================================
+            LISTA
+        ========================================= */}
+
+        <View
+          style={
+            styles.listSection
+          }
+        >
+
+          <View
+            style={
+              styles.sectionHeader
+            }
+          >
+
+            <Text
+              style={
+                styles.sectionTitle
+              }
+            >
+              Estaciones de carga
+            </Text>
+
+            <Text
+              style={
+                styles.resultsCount
+              }
+            >
+              {`${filteredStations.length} resultados`}
+            </Text>
+
+          </View>
+
+
+          {filteredStations.length ===
+          0 ? (
+
+            <View
+              style={
+                styles.emptyState
+              }
+            >
+
+              <MaterialCommunityIcons
+                name="ev-station"
+                size={32}
+                color={SUBTLE}
+              />
+
+              <Text
+                style={
+                  styles.emptyStateText
+                }
+              >
+                No encontramos estaciones
+              </Text>
+
+            </View>
+
+          ) : (
+
+            <FlatList
+              data={
+                filteredStations
+              }
+
+              keyExtractor={
+                (item) =>
+                  String(
+                    item.id_estacion
+                  )
+              }
+
+              renderItem={
+                renderStation
+              }
+
+              scrollEnabled={false}
+
+              contentContainerStyle={{
+                gap: 12,
+              }}
+            />
+
+          )}
+
+        </View>
+
       </ScrollView>
+
     </View>
+
   )
 }
 
-export default EstacionesScreen_usuario_vehiculo
 
+export default EstacionesScreen_usuario_vehiculo

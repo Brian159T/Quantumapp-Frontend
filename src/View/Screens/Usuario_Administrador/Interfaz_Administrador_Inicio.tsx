@@ -98,7 +98,7 @@ const Interfaz_Administrador_Inicio = () => {
     <View style={styles.root}>
       <StatusBar barStyle="light-content" backgroundColor={BG} />
 
-      {/* ── HEADER FIJO ── */}
+      
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
           <Saludo />

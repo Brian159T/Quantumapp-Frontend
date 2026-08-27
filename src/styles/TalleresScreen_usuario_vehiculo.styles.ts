@@ -456,4 +456,27 @@ export const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: 'bold',
   },
+  mapContainer: {
+  height: 260,
+  borderRadius: 16,
+  overflow: 'hidden',
+  marginTop: 16,
+  backgroundColor: BG,
+},
+
+map: {
+  width: '100%',
+  height: '100%',
+},
+
+marker: {
+  width: 36,
+  height: 36,
+  borderRadius: 18,
+  backgroundColor: GREEN,
+  justifyContent: 'center',
+  alignItems: 'center',
+  borderWidth: 2,
+  borderColor: WHITE,
+},
 })
